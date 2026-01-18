@@ -72,7 +72,7 @@
     ":"   '(execute-extended-command :which-key "M-x")
     "u"   '(universal-argument :which-key "Universal argument")
     "h"   '(help-command :which-key "Help")
-    "/"   '(helm-rg :which-key "Search project")
+    "/"   '(deadgrep :which-key "Search project")
 
     ;;; <leader> & --- snippets
     "&"    '(:ignore t :which-key "snippets")
