@@ -1,7 +1,22 @@
 ;;; pre-early-init.el --- Pre Early Init -*- lexical-binding: t; -*-
 
+;; Start Emacs maximized
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-(setq package-enable-at-startup nil)
 
-;;; Fixes LSP issue
+;; Fixes LSP issue
 (setenv "LSP_USE_PLISTS" "true")
+
+;; Add startup time
+(defun display-startup-time ()
+  "Display the startup time and number of garbage collections."
+  (message "Emacs init loaded in %.2f seconds (Full emacs-startup: %.2fs) with %d garbage collections."
+           (float-time (time-subtract after-init-time before-init-time))
+           (time-to-seconds (time-since before-init-time))
+           gcs-done))
+
+(add-hook 'emacs-startup-hook #'display-startup-time 100)
+
+;; Reducing clutter in ~/.emacs.d by redirecting files to ~/.emacs.d/var/
+;; NOTE: This must be placed in 'pre-early-init.el'.
+(setq user-emacs-directory (expand-file-name "var/" minimal-emacs-user-directory))
+(setq package-user-dir (expand-file-name "elpa" user-emacs-directory))

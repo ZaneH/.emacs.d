@@ -14,8 +14,9 @@
   ;; at the top of your init file.
   (push "/init.el" compile-angel-excluded-files)
   (push "/early-init.el" compile-angel-excluded-files)
-  (push "/lisp/+theme.el" compile-angel-excluded-files)
-  (push "/lisp/+keybindings.el" compile-angel-excluded-files)
+  (push "/post-init.el" compile-angel-excluded-files)
+  (push "/pre-early-init.el" compile-angel-excluded-files)
+  (push "/pre-init.el" compile-angel-excluded-files)
 
   ;; A global mode that compiles .el files before they are loaded
   ;; using `load' or `require'.

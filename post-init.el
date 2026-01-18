@@ -1,16 +1,1841 @@
-;;; post-init.el --- Post Init -*- lexical-binding: t; -*-
+;;; post-init.el --- My Emacs Config -*- lexical-binding: t; no-byte-compile: t; -*-
 
-;; Probably a security issue
+(use-package compile-angel
+  :straight t
+  :demand t
+  :config
+  (setq compile-angel-verbose t)
+  ;; The following directive prevents compile-angel from compiling your init
+  ;; files. If you choose to remove this push to `compile-angel-excluded-files'
+  ;; and compile your pre/post-init files, ensure you understand the
+  ;; implications and thoroughly test your code. For example, if you're using
+  ;; the `use-package' macro, you'll need to explicitly add:
+  ;; (eval-when-compile (require 'use-package))
+  ;; at the top of your init file.
+  ;; (push "/init.el" compile-angel-excluded-files)
+  (push "/early-init.el" compile-angel-excluded-files)
+  (push "/post-init.el" compile-angel-excluded-files)
+  (push "/pre-early-init.el" compile-angel-excluded-files)
+  (push "/pre-init.el" compile-angel-excluded-files)
+  (push "/lisp/+theme.el" compile-angel-excluded-files)
+  (push "/lisp/+keybindings.el" compile-angel-excluded-files)
+
+  ;; A global mode that compiles .el files before they are loaded
+  ;; using `load' or `require'.
+  (compile-angel-on-load-mode 1))
+
+;; Catpuccin
+;; (use-package catppuccin-theme)
+;; (setq catppuccin-flavor 'macchiato)
+;; (load-theme 'catppuccin :no-confirm)
+
+;; Relative line numbers
+(setq-default display-line-numbers-type 'relative)
+(dolist (hook '(prog-mode-hook text-mode-hook conf-mode-hook))
+  (add-hook hook #'display-line-numbers-mode))
+
+;; Set font
+(set-face-attribute 'default nil :family "JetBrainsMono Nerd Font" :height 110)
+(set-face-attribute 'fixed-pitch nil :family "JetBrainsMono Nerd Font" :height 110)
+(set-face-attribute 'variable-pitch nil :family "JetBrainsMono Nerd Font" :height 110)
+
+(set-face-attribute 'mode-line nil :height 110)
+(set-face-attribute 'mode-line-inactive nil :height 110)
+
+(use-package doom-themes
+  :straight t
+  :custom
+  (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
+  (doom-themes-enable-italic t) ; if nil, italics is universally disabled
+  ;; (doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
+  :config
+  ;; (load-theme 'doom-tokyo-night :no-confirm)
+  (load-theme 'doom-badger :no-confirm)
+  ;; (load-theme 'doom-challenger-deep :no-confirm)
+  ;; (load-theme 'doom-bluloco-dark :no-confirm)
+
+  (doom-themes-visual-bell-config)
+  ;; (doom-themes-treemacs-config)
+  (doom-themes-org-config))
+
+;; This can cause UI glitches (e.g. flickering mode-line)
+;; (use-package solaire-mode
+;;   :straight t
+;;   :config
+;;   (require 'solaire-mode)
+;;   (solaire-global-mode +1))
+
+;; ;; Probably a security issue
 (setq package-check-signature nil)
 
-(add-to-list 'load-path "~/.emacs.d/lisp")
-
-(load "+compile-angel")
-
+;; (add-to-list 'load-path "~/.emacs.d/lisp")
+;; 
+;; (load "+compile-angel")
+;; 
 (eval-when-compile (require 'use-package))
 
-(load "+theme")
-(load "+keybindings")
-(load "+config")
+;; (load "+theme")
+;; (load "+keybindings")
+;; (load "+config")
+;; 
+;; (load "secrets")
 
-(load "secrets")
+(setq-default fill-column 120
+              delete-trailing-lines t)
+
+;; Use auto-fill in these modes at 120
+(dolist (hook '(text-mode-hook
+                markdown-mode-hook
+                org-mode-hook
+                prog-mode-hook))
+  (add-hook hook #'auto-fill-mode))
+
+;; Git commit uses 72 char limit
+(add-hook 'git-commit-mode-hook
+          (lambda ()
+            (setq fill-column 72)
+            (auto-fill-mode 1)))
+
+;; Persist entries
+(server-mode +1)
+(save-place-mode +1)
+(savehist-mode +1)
+(recentf-mode +1)
+
+;; Smart parenthesis
+(electric-pair-mode 1)
+
+;; Required for self-signed cert (for IRC)
+(setq gnutls-verify-error nil)
+
+;; Smooth scrolling
+(pixel-scroll-precision-mode +1)
+
+;; Keep compilation window at the bottom
+(setq split-height-threshold nil)
+(setq split-width-threshold most-positive-fixnum)
+
+;; Hide Warnings and Compile-Log windows (untested)
+(add-to-list 'display-buffer-alist
+             `(,(rx bos "*" (or "Warnings" "Compile-Log") "*" eos)
+               (display-buffer-no-window)
+               (allow-no-window . t)))
+
+;; Enable code-folding in code buffers
+(add-hook 'prog-mode-hook (lambda ()
+                            (hs-minor-mode +1)))
+
+(use-package envrc
+  :straight t
+  :defer t
+  :hook (after-init . envrc-global-mode))
+
+(use-package org
+  :straight (:type built-in)
+  :commands (org-mode org-agenda)
+  :mode ("\\.org\\'" . org-mode)
+  :config
+  (setq org-directory "~/repos/org")
+  (setq org-agenda-files '("~/repos/org/todo.org"))
+  :custom
+  (org-startup-folded t)
+  (org-startup-indented t)
+  (org-pretty-entities t)
+  (org-hide-emphasis-markers t)
+  (org-startup-with-inline-images t)
+  (org-image-actual-width '(300))
+  (org-ellipsis " ▾")
+  (org-agenda-start-with-log-mode t)
+  (org-log-done 'time)
+  (org-log-into-drawer t))
+
+(use-package org-bullets
+  :straight t
+  :defer t
+  :after org
+  :init
+  (require 'org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+(use-package org-archive
+  :straight (:type built-in)
+  :defer t
+  :after org
+  :config
+  (setq org-archive-location "archive.org::datetree/"))
+
+(use-package dired-gitignore
+  :straight t
+  :defer t
+  :after dired
+  :hook (dired-mode . #'dired-gitignore-global-mode))
+
+(use-package dirvish
+  :straight t
+  :defer t
+  :init
+  (dirvish-override-dired-mode)
+  :config
+  (setq dirvish-attributes '(vc-state subtree-state all-the-icons collapse file-size))
+  (setq dirvish-mode-line-format '(:left (sort symlink) :right (omit yank index))))
+
+;; Inspired by: https://www.youtube.com/watch?v=a_WNtuefREM
+
+(use-package ts
+  :straight t
+  :defer t)
+
+(use-package ht
+  :straight t
+  :defer t)
+
+(use-package s
+  :straight t
+  :defer t)
+
+(use-package dash
+  :straight t
+  :defer t)
+
+(use-package olivetti
+  :straight t
+  :defer t)
+
+;; Org Super Agenda
+(use-package org-super-agenda
+  :straight t
+  :after (org nerd-icons)
+  :hook
+  (org-agenda-mode . olivetti-mode)
+  :config
+  (setq org-super-agenda-groups '((:name "Personal "
+                                         :and(:category "Personal")
+                                         :order 3)
+
+                                  (:name "Work "
+                                         :and(:category "Work")
+                                         :order 2)
+
+                                  (:name "Today"
+                                         :time-grid t
+                                         :scheduled today
+                                         :order 1)
+
+                                  (:name "Overdue"
+                                         :deadline past
+                                         :order 0)
+
+                                  (:name "Due Soon"
+                                         :deadline future
+                                         :order -1)
+
+                                  (:name "Unscheduled"
+                                         :scheduled nil
+                                         :order -2)
+
+                                  (:name "Stuck"
+                                         :todo "WAITING|HOLD|SOMEDAY"
+                                         :order -3)))
+  (org-super-agenda-mode)
+
+  (setq org-agenda-span 4
+        org-agenda-start-day "+0d"
+        org-agenda-skip-timestamp-if-done t
+        org-agenda-skip-deadline-if-done t
+        org-agenda-skip-scheduled-if-done t
+        org-agenda-skip-scheduled-if-deadline-is-shown t
+        org-agenda-skip-timestamp-if-deadline-is-shown t)
+
+  ;; Hide extra information
+  (setq org-agenda-current-time-string ""
+        org-agenda-time-grid '((daily) () "" "")
+        org-agenda-prefix-format '(
+                                   (agenda . "  %?-2i %t ")
+                                   (todo . " %i %-12:c")
+                                   (tags . " %i %-12:c")
+                                   (search . " %i %-12:c")
+                                   ))
+
+  ;; Hide tags
+  (setq org-agenda-hide-tags-regexp ".*")
+
+  ;; Set icons
+  (setq org-agenda-category-icon-alist
+        `(("Personal" ,(list (nerd-icons-faicon "nf-fa-home" :height 0.9)) nil nil :ascent center)
+          ("Work" ,(list (nerd-icons-faicon "nf-fa-briefcase" :height 0.9)) nil nil :ascent center)))
+  
+  (custom-set-faces
+   '(org-agenda-date ((t (:inherit outline-1 :height 1.15))))
+   '(org-agenda-date-today ((t (:inherit diary :height 1.15))))
+   '(org-agenda-date-weekend ((t (:inherit outline-2 :height 1.15))))
+   '(org-agenda-date-weekend-today ((t (:inherit outline-4 :height 1.15))))
+   '(org-super-agenda-header ((t (:inherit custom-button :weight bold :height 1.05))))))
+
+(use-package org-modern
+  :straight t
+  :after '(org)
+  :hook (org-mode . org-modern-mode)
+  :hook (org-agenda-finalize . org-modern-agenda)
+  :config
+  ;; Minimal UI
+  (package-initialize)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (modus-themes-load-operandi)
+
+  ;; Choose some fonts
+  ;; (set-face-attribute 'default nil :family "Iosevka")
+  ;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
+  ;; (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
+
+  ;; Add frame borders and window dividers
+  (modify-all-frames-parameters
+   '((right-divider-width . 40)
+     (internal-border-width . 40)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+
+  (setq
+   ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-agenda-tags-column 0
+   org-ellipsis "…")
+
+  (global-org-modern-mode))
+
+(setq evil-want-integration t)
+(use-package evil
+  :straight t
+  :init
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump t)
+  (setq evil-want-keybinding nil)
+  (setq evil-undo-system 'undo-redo)
+  :config
+  (evil-mode 1))
+
+(setq evil-want-integration t)
+(use-package evil-collection
+  :straight t
+  :after evil
+  :init
+  (setq evil-collection-want-find-usages-bindings t)
+  (setq evil-collection-calendar-want-org-bindings t)
+  :config
+  (evil-collection-init))
+
+(use-package evil-mc
+  :straight t
+  :after evil
+  :init
+  (require 'evil-mc)
+  (global-evil-mc-mode 1))
+
+(use-package evil-org
+  :straight t
+  :after (evil org)
+  :hook (org-mode . (lambda () evil-org-mode))
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+
+(use-package evil-surround
+  :straight t
+  :after evil
+  :config
+  (global-evil-surround-mode 1))
+
+(use-package evil-numbers
+  :straight t
+  :defer t
+  :after evil)
+
+(use-package devdocs
+  :straight t
+  :defer t
+  :demand t)
+
+(defun +my/devdocs-choose ()
+  (interactive)
+  (devdocs-lookup t))
+
+(use-package general
+  :straight t
+  :demand t
+  :config
+  (general-create-definer my/leader
+    :states '(normal visual insert emacs)
+    :keymaps 'override
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+
+  ;; Major mode leader
+  (general-create-definer my/local-leader
+    :states '(normal visual)
+    :keymaps 'override
+    :prefix "SPC m"
+    :global-prefix "C-SPC m")
+  (general-define-key
+   :states '(normal visual)
+   :keymaps 'override
+   "," (general-simulate-key "SPC m"))
+
+  ;;; Global keybindings (non-leader)
+  (general-define-key
+   :states '(normal visual motion)
+   ;; Smart tab behavior
+   "TAB" 'evil-jump-item
+   "<backtab>" 'hs-show-all
+   
+   ;; Font scaling
+   "C-=" 'text-scale-increase
+   "C--" 'text-scale-decrease
+   "C-+" (lambda () (interactive) (text-scale-set 0))
+   
+   ;; Frame fullscreen
+   "C-S-f" 'toggle-frame-fullscreen
+
+   ;; Comment
+   "gcc" 'comment-line)
+
+  ;; Minibuffer navigation
+  (general-define-key
+   :keymaps '(minibuffer-local-map
+              minibuffer-local-ns-map
+              minibuffer-local-completion-map
+              minibuffer-local-must-match-map
+              minibuffer-local-isearch-map)
+   "C-j" 'next-line
+   "C-k" 'previous-line
+   "C-w" 'backward-kill-word
+   "<escape>" 'abort-recursive-edit)
+
+  ;; Mouse side buttons for navigation
+  (general-define-key
+   :states '(normal visual motion)
+   "<mouse-8>" 'evil-jump-backward
+   "<mouse-9>" 'evil-jump-forward)
+
+  ;;; Leader key bindings
+  (my/leader
+    ;; Top-level bindings
+    "SPC" '(project-find-file :which-key "Find file in project")
+    "."   '(find-file :which-key "Find file")
+    ","   '(helm-buffers-list :which-key "Switch buffer")
+    "`"   '(evil-switch-to-windows-last-buffer :which-key "Last buffer")
+    ";"   '(eval-expression :which-key "Eval expression")
+    ":"   '(execute-extended-command :which-key "M-x")
+    "u"   '(universal-argument :which-key "Universal argument")
+    "h"   '(help-command :which-key "Help")
+    "/"   '(deadgrep :which-key "Search project")
+
+    ;;; <leader> & --- snippets
+    "&"    '(:ignore t :which-key "snippets")
+    "&n"   '(yas-new-snippet :which-key "New snippet")
+    "&i"   '(yas-insert-snippet :which-key "Snippet")
+    "&/"   '(yas-visit-snippet-file :which-key "Find global snippet")
+    "&r"   '(yas-reload-all :which-key "Reload snippets")
+    "&c"   '(aya-create :which-key "Create Temp Template")
+    "&e"   '(aya-expand :which-key "Use Temp Template")
+
+    ;;; <leader> a --- activities
+    "a"   '(:ignore t :which-key "activities")
+    "aa"  '(activities-resume :which-key "Resume activity")
+    "ac"  '(activities-new :which-key "Create activity")
+    "ad"  '(activities-define :which-key "Define activity")
+    "az"  '(activities-suspend :which-key "Suspend activity")
+    "ak"  '(activities-kill :which-key "Kill activity")
+    "as"  '(activities-switch :which-key "Switch activity")
+    "ab"  '(activities-switch-buffer :which-key "Switch buffer")
+    "ag"  '(activities-revert :which-key "Revert to default")
+    "al"  '(activities-list :which-key "List activities")
+    "aR"  '(activities-rename :which-key "Rename activity")
+    "ax"  '(activities-discard :which-key "Discard activity")
+    
+    ;;; <leader> b --- buffer
+    "b"   '(:ignore t :which-key "buffer")
+    "bb"  '(helm-buffers-list :which-key "Switch buffer")
+    "bB"  '(switch-to-buffer :which-key "Switch buffer (no helm)")
+    "bd"  '(kill-current-buffer :which-key "Kill buffer")
+    "bk"  '(kill-current-buffer :which-key "Kill buffer")
+    "bK"  '(kill-matching-buffers :which-key "Kill matching buffers")
+    "bi"  '(ibuffer :which-key "ibuffer")
+    "bn"  '(next-buffer :which-key "Next buffer")
+    "bp"  '(previous-buffer :which-key "Previous buffer")
+    "b["  '(previous-buffer :which-key "Previous buffer")
+    "b]"  '(next-buffer :which-key "Next buffer")
+    "bN"  '(evil-buffer-new :which-key "New empty buffer")
+    "br"  '(revert-buffer :which-key "Revert buffer")
+    "bR"  '(rename-buffer :which-key "Rename buffer")
+    "bs"  '(basic-save-buffer :which-key "Save buffer")
+    "bS"  '(save-some-buffers :which-key "Save all buffers")
+    "bz"  '(bury-buffer :which-key "Bury buffer")
+    "bx"  '(scratch-buffer :which-key "Scratch buffer")
+    
+    ;;; <leader> c --- code
+    "c"   '(:ignore t :which-key "code")
+    "ca"  '(lsp-execute-code-action :which-key "Code action")
+    "cc"  '(compile :which-key "Compile")
+    "cC"  '(recompile :which-key "Recompile")
+    "cd"  '(lsp-find-definition :which-key "Find definition")
+    "cD"  '(lsp-find-references :which-key "Find references")
+    "cf"  '(lsp-format-buffer :which-key "Format buffer")
+    "ci"  '(lsp-find-implementation :which-key "Find implementation")
+    "cj"  '(lsp-ui-imenu :which-key "Jump to symbol")
+    "ck"  '(lsp-describe-thing-at-point :which-key "Documentation")
+    "cl"  '(lsp-command-map :which-key "LSP")
+    "cr"  '(lsp-rename :which-key "Rename")
+    "ct"  '(lsp-find-type-definition :which-key "Type definition")
+    "cx"  '(flycheck-list-errors :which-key "List errors")
+
+    ;;; <leader> d --- debugger
+    "d"   '(:ignore t :which-key "debugger")
+    "dd"  '(dape :which-key "Open Dape")
+    "dp"  '(dape-pause :which-key "Pause")
+    "dc"  '(dape-continue :which-key "Continue")
+    "dn"  '(dape-next :which-key "Next")
+    "ds"  '(dape-step-in :which-key "Step In")
+    "do"  '(dape-step-out :which-key "Step Out")
+    "dr"  '(dape-restart :which-key "Restart")
+    "di"  '(dape-info :which-key "Info")
+    "dR"  '(dape-repl :which-key "REPL")
+    "dm"  '(dape-memory :which-key "Memory")
+    "dM"  '(dape-disassemble :which-key "Disassemble")
+    "dl"  '(dape-breakpoint-log :which-key "Log Breakpoint")
+    "de"  '(dape-breakpoint-expression :which-key "Expression Breakpoint")
+    "dh"  '(dape-breakpoint-hits :which-key "Breakpoint Hits")
+    "db"  '(dape-breakpoint-toggle :which-key "Toggle Breakpoint")
+    "dB"  '(dape-breakpoint-remove-all :which-key "Remove All Breakpoints")
+    "dt"  '(dape-select-thread :which-key "Select Thread")
+    "dS"  '(dape-select-stack :which-key "Select Stack")
+    "d>"  '(dape-stack-select-down :which-key "Stack Down")
+    "d<"  '(dape-stack-select-up :which-key "Stack Up")
+    "dx"  '(dape-evaluate-expression :which-key "Evaluate Expression")
+    "dw"  '(dape-watch-dwim :which-key "Watch DWIM")
+    "dD"  '(dape-disconnect-quit :which-key "Disconnect & Quit")
+    "dq"  '(dape-quit :which-key "Quit")
+    
+    ;;; <leader> f --- file
+    "f"   '(:ignore t :which-key "file")
+    "ff"  '(helm-find-files :which-key "Find file")
+    "fF"  '(find-file-other-window :which-key "Find file other window")
+    "fr"  '(helm-recentf :which-key "Recent files")
+    "fs"  '(save-buffer :which-key "Save file")
+    "fS"  '(write-file :which-key "Save as...")
+    "fd"  '(dired :which-key "Open dired")
+    "fD"  '(dired-jump :which-key "Dired jump")
+    ;; TODO: Add custom functions for these when needed:
+    ;; "fR"  '(doom/move-this-file :which-key "Rename/move file")
+    ;; "fC"  '(doom/copy-this-file :which-key "Copy file")
+    ;; "fy"  '(+default/yank-buffer-path :which-key "Yank file path")
+    
+    ;;; <leader> g --- git/magit
+    "g"   '(:ignore t :which-key "git")
+    "gg"  '(magit-status :which-key "Magit status")
+    "gG"  '(magit-status-here :which-key "Magit status here")
+    "gB"  '(magit-blame-addition :which-key "Magit blame")
+    "gb"  '(magit-branch-checkout :which-key "Switch branch")
+    "gc"  '(magit-clone :which-key "Clone")
+    "gd"  '(magit-diff :which-key "Diff")
+    "gD"  '(magit-file-delete :which-key "Delete file")
+    "gf"  '(magit-find-file :which-key "Find file")
+    "gF"  '(magit-fetch :which-key "Fetch")
+    "gL"  '(magit-log-buffer-file :which-key "Log buffer file")
+    "gp"  '(magit-pull :which-key "Pull")
+    "gP"  '(magit-push :which-key "Push")
+    "gr"  '(magit-rebase :which-key "Rebase")
+    "gR"  '(vc-revert :which-key "Revert file")
+    "gs"  '(magit-stage :which-key "Stage file")
+    "gS"  '(magit-stage-modified :which-key "Stage modified")
+    "gt"  '(git-timemachine-toggle :which-key "Time machine")
+    "gu"  '(magit-unstage :which-key "Unstage file")
+    "g/"  '(magit-dispatch :which-key "Magit dispatch")
+    "g."  '(magit-file-dispatch :which-key "File dispatch")
+    "g'"  '(forge-dispatch :which-key "Forge dispatch")
+    "go"  '(:ignore t :which-key "open in browser")
+    "gor" '(forge-browse-remote :which-key "Browse remote")
+    "goc" '(forge-browse-commit :which-key "Browse commit")
+    "goi" '(forge-browse-issue :which-key "Browse issue")
+    "gop" '(forge-browse-pullreq :which-key "Browse pull request")
+    "goI" '(forge-browse-issues :which-key "Browse issues")
+    "goP" '(forge-browse-pullreqs :which-key "Browse pull requests")
+    "gl"  '(:ignore t :which-key "list")
+    "glr" '(magit-list-repositories :which-key "List repositories")
+    "gls" '(magit-list-submodules :which-key "List submodules")
+    "gli" '(forge-list-issues :which-key "List issues")
+    "glp" '(forge-list-pullreqs :which-key "List pull requests")
+    "gln" '(forge-list-notifications :which-key "List notifications")
+    "gC"  '(:ignore t :which-key "create")
+    "gCr" '(magit-init :which-key "Initialize repo")
+    "gCR" '(magit-clone :which-key "Clone repo")
+    "gCc" '(magit-commit-create :which-key "Commit")
+    "gCf" '(magit-commit-fixup :which-key "Fixup")
+    "gCF" '(magit-commit-instant-fixup :which-key "Instant fixup")
+    "gCb" '(magit-branch-and-checkout :which-key "Branch")
+    "gCi" '(forge-create-issue :which-key "Create issue")
+    "gCp" '(forge-create-pullreq :which-key "Create pull request")
+
+    ;;; <leader> h --- help
+    "h"   '(:ignore t :which-key "help")
+    "hd"   '(devdocs-lookup :which-key "Devdocs lookup")
+    "hD"   '(+my/devdocs-choose :which-key "Devdocs choose")
+    
+    ;;; <leader> i --- insert
+    "i"   '(:ignore t :which-key "insert")
+    "if"  '(insert-file :which-key "Insert file")
+    "ir"  '(evil-show-registers :which-key "From register")
+    "iy"  '(yank-pop :which-key "From kill ring")
+    "is"  '(yas-insert-snippet :which-key "Snippet")
+
+    ;;; <leader> I --- IRC
+    "I"   '(:ignore t :which-key "irc")
+    "Io"  '(circe :which-key "Open Circe")
+    "Ir"  '(circe-reconnect :which-key "Reconnect to server")
+
+    ;;; <leader> n --- notes
+    "n"   '(:ignore t :which-key "notes")
+    "na"  '(org-agenda :which-key "Org agenda")
+    "nl"  '(org-store-link :which-key "Org store link")
+    "nn"  '(org-capture :which-key "Org capture")
+    "nN"  '(org-capture-goto-target :which-key "Goto capture")
+    "no"  '(org-clock-goto :which-key "Active org-clock")
+    "nt"  '(org-todo-list :which-key "Todo list")
+    "nv"  '(org-search-view :which-key "View search")
+    "nr"  '(:ignore t :which-key "roam")
+    "nra" '(org-roam-node-random :which-key "Open random node")
+    "nrf" '(org-roam-node-find :which-key "Find node")
+    "nrF" '(org-roam-ref-find :which-key "Find ref")
+    "nrg" '(org-roam-graph :which-key "Show graph")
+    "nri" '(org-roam-node-insert :which-key "Insert node")
+    "nrn" '(org-roam-capture :which-key "Capture to node")
+    "nrr" '(org-roam-buffer-toggle :which-key "Toggle roam buffer")
+    "nrR" '(org-roam-buffer-display-dedicated :which-key "Launch roam buffer")
+    "nrs" '(org-roam-db-sync :which-key "Sync database")
+    
+    ;;; <leader> o --- open
+    "o"   '(:ignore t :which-key "open")
+    "oaa" '(org-agenda :which-key "Agenda")
+    "oat" '(org-todo-list :which-key "Todo list")
+    "ot"  '(vterm-toggle :which-key "Toggle terminal")
+    "oT"  '(vterm :which-key "New terminal")
+    "oD"  '(docker :which-key "Docker")
+    "of"  '(make-frame :which-key "New frame")
+
+    ;;; <leader> o --- open llm
+    "oll" '(gptel :which-key "Open gptel")
+    "olm" '(gptel-menu :which-key "Open gptel menu")
+    "ola" '(gptel-add :which-key "Add text to context")
+    "olf" '(gptel-add-file :which-key "Add file to context")
+    "ols" '(gptel-send :which-key "Send to gptel")
+
+    ;;; <leader> p --- project
+    "p"   '(:ignore t :which-key "project")
+    "pv"  '(dirvish-dwim :which-key "Open dirvish")
+    "pg"  '(deadgrep :which-key "Deadgrep")
+    
+    ;;; <leader> q --- quit/session
+    "q"   '(:ignore t :which-key "quit/session")
+    "qq"  '(save-buffers-kill-terminal :which-key "Quit Emacs")
+    "qQ"  '(evil-quit-all :which-key "Quit without saving")
+    "qK"  '(save-buffers-kill-emacs :which-key "Kill Emacs and daemon")
+    "qf"  '(delete-frame :which-key "Delete frame")
+    "qr"  '(restart-emacs :which-key "Restart Emacs")
+    
+    ;;; <leader> s --- search
+    "s"   '(:ignore t :which-key "search")
+    "sb"  '(swiper :which-key "Search buffer")
+    "sB"  '(swiper-all :which-key "Search all open buffers")
+    "sm"  '(bookmark-jump :which-key "Jump to bookmark")
+    "sM"  '(bookmark-set :which-key "Set bookmark")
+    "sj"  '(evil-show-jumps :which-key "Jump list")
+    "sr"  '(evil-show-marks :which-key "Show marks")
+    
+    ;;; <leader> t --- toggle
+    "t"   '(:ignore t :which-key "toggle")
+    "tf"  '(flycheck-mode :which-key "Flycheck")
+    "tF"  '(toggle-frame-fullscreen :which-key "Fullscreen")
+    "tl"  '(display-line-numbers-mode :which-key "Line numbers")
+    "tr"  '(read-only-mode :which-key "Read-only")
+    "tv"  '(visible-mode :which-key "Visible mode")
+    "tw"  '(visual-line-mode :which-key "Wrap lines")
+    "tu"  '(vundo :which-key "Undo tree")
+    
+    ;;; <leader> w --- window
+    "w"   '(:ignore t :which-key "window")
+    "ww"  '(ace-window :which-key "Select window")
+    "wd"  '(delete-window :which-key "Delete window")
+    "wD"  '(delete-other-windows :which-key "Delete other windows")
+    "ws"  '(split-window-below :which-key "Split below")
+    "wv"  '(split-window-right :which-key "Split right")
+    "wh"  '(evil-window-left :which-key "Window left")
+    "wj"  '(evil-window-down :which-key "Window down")
+    "wk"  '(evil-window-up :which-key "Window up")
+    "wl"  '(evil-window-right :which-key "Window right")
+    "wH"  '(evil-window-move-far-left :which-key "Move far left")
+    "wJ"  '(evil-window-move-very-bottom :which-key "Move far down")
+    "wK"  '(evil-window-move-very-top :which-key "Move far up")
+    "wL"  '(evil-window-move-far-right :which-key "Move far right")
+    "w="  '(balance-windows :which-key "Balance windows")
+    "wm"  '(delete-other-windows :which-key "Maximize window")
+    "w+"  '(evil-window-increase-height :which-key "Increase height")
+    "w-"  '(evil-window-decrease-height :which-key "Decrease height")
+    "w>"  '(evil-window-increase-width :which-key "Increase width")
+    "w<"  '(evil-window-decrease-width :which-key "Decrease width"))
+
+  ;;; Evil-mc keybindings (multiple cursors)
+  (my/leader
+    :prefix "gz"
+    :states '(normal visual)
+    "d" '(evil-mc-make-and-goto-next-match :which-key "Next match")
+    "D" '(evil-mc-make-and-goto-prev-match :which-key "Prev match")
+    "s" '(evil-mc-skip-and-goto-next-match :which-key "Skip next")
+    "S" '(evil-mc-skip-and-goto-prev-match :which-key "Skip prev")
+    "c" '(evil-mc-skip-and-goto-next-cursor :which-key "Next cursor")
+    "C" '(evil-mc-skip-and-goto-prev-cursor :which-key "Prev cursor")
+    "j" '(evil-mc-make-cursor-move-next-line :which-key "Cursor next line")
+    "k" '(evil-mc-make-cursor-move-prev-line :which-key "Cursor prev line")
+    "m" '(evil-mc-make-all-cursors :which-key "All cursors")
+    "n" '(evil-mc-make-and-goto-next-cursor :which-key "Next cursor")
+    "N" '(evil-mc-make-and-goto-last-cursor :which-key "Last cursor")
+    "p" '(evil-mc-make-and-goto-prev-cursor :which-key "Prev cursor")
+    "P" '(evil-mc-make-and-goto-first-cursor :which-key "First cursor")
+    "q" '(evil-mc-undo-all-cursors :which-key "Undo all")
+    "u" '(evil-mc-undo-last-added-cursor :which-key "Undo last")
+    "z" '(evil-mc-toggle-cursor-here :which-key "Toggle here"))
+
+  ;; Alternative multiple cursor bindings in visual mode
+  (general-define-key
+   :states 'visual
+   "M-d" 'evil-mc-make-and-goto-next-match
+   "M-D" 'evil-mc-make-and-goto-prev-match)
+
+  ;;; Helm-specific bindings
+  (with-eval-after-load 'helm
+    (general-define-key
+     :keymaps 'helm-map
+     "C-j" 'helm-next-line
+     "C-k" 'helm-previous-line
+     "C-h" 'helm-next-source
+     "C-l" 'helm-previous-source
+     "TAB" 'helm-execute-persistent-action
+     "C-z" 'helm-select-action)
+    
+    (general-define-key
+     :keymaps 'helm-find-files-map
+     "C-h" 'helm-find-files-up-one-level
+     "C-l" 'helm-execute-persistent-action))
+
+  ;;; Completion (Corfu) bindings
+  (with-eval-after-load 'corfu
+    (general-define-key
+     :keymaps 'corfu-map
+     "C-j" 'corfu-next
+     "C-k" 'corfu-previous
+     "C-SPC" 'corfu-insert-separator
+     "TAB" 'corfu-insert
+     "RET" 'corfu-insert))
+
+  ;; Bind C-SPC to open completion menu
+  (setq set-mark-command-repeat-pop t)
+  (global-unset-key (kbd "C-SPC"))
+  (global-unset-key (kbd "C-@"))
+
+  (general-define-key
+   :states '(insert)
+   :keymaps 'override
+   "C-SPC" #'completion-at-point
+   "C-@"   #'completion-at-point)
+
+  (with-eval-after-load 'markdown-mode
+    (my/local-leader
+      :keymaps 'markdown-mode-map
+      "'" '(markdown-edit-code-block :which-key "Edit code block")
+      "o" '(markdown-open :which-key "Open")
+      "p" '(markdown-preview :which-key "Preview")
+      "e" '(markdown-export :which-key "Export")
+      
+      "i" '(:ignore t :which-key "insert")
+      "iT" '(markdown-toc-generate-toc :which-key "Table of contents")
+      "ii" '(markdown-insert-image :which-key "Image")
+      "il" '(markdown-insert-link :which-key "Link")
+      "i-" '(markdown-insert-hr :which-key "<hr>")
+      "it" '(markdown-insert-table :which-key "Table")
+      
+      "t" '(:ignore t :which-key "toggle")
+      "ti" '(markdown-toggle-inline-images :which-key "Inline images")
+      "tl" '(markdown-toggle-url-hiding :which-key "URL hiding")
+      "tm" '(markdown-toggle-markup-hiding :which-key "Markup hiding")))
+
+  (with-eval-after-load 'go-mode
+    (my/local-leader
+      :keymaps 'go-mode-map
+      "=" '(gofmt :which-key "Format")
+      "i" '(go-goto-imports :which-key "Goto imports")
+      "d" '(godoc-at-point :which-key "Godoc at point")
+      
+      "a" '(lsp-execute-code-action :which-key "Code action")
+      "r" '(lsp-rename :which-key "Rename")
+      
+      "t" '(:ignore t :which-key "test")
+      "tt" '((lambda () (interactive) (compile "go test -v")) :which-key "Test all")
+      "tf" '((lambda () (interactive) (compile (format "go test -v %s" buffer-file-name))) :which-key "Test file")
+      
+      "b" '(:ignore t :which-key "build")
+      "bb" '((lambda () (interactive) (compile "go build")) :which-key "Build")
+      "br" '((lambda () (interactive) (compile "go run .")) :which-key "Run")))
+
+  (with-eval-after-load 'org
+    ;; Global org-mode keybindings
+    (general-define-key
+     :keymaps 'org-mode-map
+     "C-c C-S-l" '+org/remove-link
+     "C-c C-i" 'org-toggle-inline-images
+     "S-RET" '+org/shift-return
+     "C-RET" '+org/insert-item-below
+     "C-S-RET" '+org/insert-item-above
+     "C-M-RET" 'org-insert-subheading
+     [C-return] '+org/insert-item-below
+     [C-S-return] '+org/insert-item-above
+     [C-M-return] 'org-insert-subheading
+     [remap beginning-of-line] 'org-beginning-of-line
+     [remap end-of-line] 'org-end-of-line)
+    
+    ;; macOS-specific bindings
+    (when (eq system-type 'darwin)
+      (general-define-key
+       :keymaps 'org-mode-map
+       [s-return] '+org/insert-item-below
+       [s-S-return] '+org/insert-item-above
+       [s-M-return] 'org-insert-subheading))
+    
+    (my/local-leader
+      :keymaps 'org-mode-map
+      "#" '(org-update-statistics-cookies :which-key "Update statistics")
+      "'" '(org-edit-special :which-key "Edit special")
+      "*" '(org-ctrl-c-star :which-key "Turn to heading")
+      "-" '(org-ctrl-c-minus :which-key "Turn to item")
+      "," '(org-switchb :which-key "Switch buffer")
+      "." '(org-goto :which-key "Goto")
+      "@" '(org-cite-insert :which-key "Insert citation")
+      "A" '(org-archive-subtree-default :which-key "Archive subtree")
+      "e" '(org-export-dispatch :which-key "Export")
+      "f" '(org-footnote-action :which-key "Footnote")
+      "h" '(org-toggle-heading :which-key "Toggle heading")
+      "i" '(org-toggle-item :which-key "Toggle item")
+      "I" '(org-id-get-create :which-key "Get/create ID")
+      "k" '(org-babel-remove-result :which-key "Remove result")
+      "n" '(org-store-link :which-key "Store link")
+      "o" '(org-set-property :which-key "Set property")
+      "q" '(org-set-tags-command :which-key "Set tags")
+      "t" '(org-todo :which-key "Todo")
+      "T" '(org-todo-list :which-key "Todo list")
+      "x" '(org-toggle-checkbox :which-key "Toggle checkbox")
+      
+      "a" '(:ignore t :which-key "attachments")
+      "aa" '(org-attach :which-key "Attach")
+      "ad" '(org-attach-delete-one :which-key "Delete one")
+      "aD" '(org-attach-delete-all :which-key "Delete all")
+      "af" '(+org/find-file-in-attachments :which-key "Find file")
+      "an" '(org-attach-new :which-key "New")
+      "ao" '(org-attach-open :which-key "Open")
+      "aO" '(org-attach-open-in-emacs :which-key "Open in Emacs")
+      "ar" '(org-attach-reveal :which-key "Reveal")
+      "aR" '(org-attach-reveal-in-emacs :which-key "Reveal in Emacs")
+      "au" '(org-attach-url :which-key "Attach URL")
+      "as" '(org-attach-set-directory :which-key "Set directory")
+      "aS" '(org-attach-sync :which-key "Sync")
+      
+      "b" '(:ignore t :which-key "tables")
+      "b-" '(org-table-insert-hline :which-key "Insert hline")
+      "ba" '(org-table-align :which-key "Align")
+      "bb" '(org-table-blank-field :which-key "Blank field")
+      "bc" '(org-table-create-or-convert-from-region :which-key "Create/convert")
+      "be" '(org-table-edit-field :which-key "Edit field")
+      "bf" '(org-table-edit-formulas :which-key "Edit formulas")
+      "bh" '(org-table-field-info :which-key "Field info")
+      "bs" '(org-table-sort-lines :which-key "Sort lines")
+      "br" '(org-table-recalculate :which-key "Recalculate")
+      "bR" '(org-table-recalculate-buffer-tables :which-key "Recalculate buffer")
+      
+      "bd" '(:ignore t :which-key "delete")
+      "bdc" '(org-table-delete-column :which-key "Delete column")
+      "bdr" '(org-table-kill-row :which-key "Delete row")
+      
+      "bi" '(:ignore t :which-key "insert")
+      "bic" '(org-table-insert-column :which-key "Insert column")
+      "bih" '(org-table-insert-hline :which-key "Insert hline")
+      "bir" '(org-table-insert-row :which-key "Insert row")
+      "biH" '(org-table-hline-and-move :which-key "Hline and move")
+      
+      "bt" '(:ignore t :which-key "toggle")
+      "btf" '(org-table-toggle-formula-debugger :which-key "Formula debugger")
+      "bto" '(org-table-toggle-coordinate-overlays :which-key "Coordinate overlays")
+      
+      "c" '(:ignore t :which-key "clock")
+      "cc" '(org-clock-cancel :which-key "Cancel")
+      "cd" '(org-clock-mark-default-task :which-key "Mark default")
+      "ce" '(org-clock-modify-effort-estimate :which-key "Modify effort")
+      "cE" '(org-set-effort :which-key "Set effort")
+      "cg" '(org-clock-goto :which-key "Goto")
+      "ci" '(org-clock-in :which-key "Clock in")
+      "cI" '(org-clock-in-last :which-key "Clock in last")
+      "co" '(org-clock-out :which-key "Clock out")
+      "cr" '(org-resolve-clocks :which-key "Resolve")
+      "cR" '(org-clock-report :which-key "Report")
+      "ct" '(org-evaluate-time-range :which-key "Evaluate time")
+      "c=" '(org-clock-timestamps-up :which-key "Timestamps up")
+      "c-" '(org-clock-timestamps-down :which-key "Timestamps down")
+      
+      "d" '(:ignore t :which-key "date/deadline")
+      "dd" '(org-deadline :which-key "Deadline")
+      "ds" '(org-schedule :which-key "Schedule")
+      "dt" '(org-time-stamp :which-key "Timestamp")
+      "dT" '(org-time-stamp-inactive :which-key "Inactive timestamp")
+      
+      "g" '(:ignore t :which-key "goto")
+      "gg" '(org-goto :which-key "Goto")
+      "gc" '(org-clock-goto :which-key "Clock")
+      "gi" '(org-id-goto :which-key "ID")
+      "gr" '(org-refile-goto-last-stored :which-key "Last refile")
+      "gx" '(org-capture-goto-last-stored :which-key "Last capture")
+      
+      "l" '(:ignore t :which-key "links")
+      "lc" '(org-cliplink :which-key "Cliplink")
+      "li" '(org-id-store-link :which-key "ID link")
+      "ll" '(org-insert-link :which-key "Insert")
+      "lL" '(org-insert-all-links :which-key "Insert all")
+      "ls" '(org-store-link :which-key "Store")
+      "lS" '(org-insert-last-stored-link :which-key "Last stored")
+      "lt" '(org-toggle-link-display :which-key "Toggle display")
+      "ly" '(+org/yank-link :which-key "Yank")
+      
+      "P" '(:ignore t :which-key "publish")
+      "Pa" '(org-publish-all :which-key "All")
+      "Pf" '(org-publish-current-file :which-key "File")
+      "Pp" '(org-publish :which-key "Project")
+      "PP" '(org-publish-current-project :which-key "Current project")
+      "Ps" '(org-publish-sitemap :which-key "Sitemap")
+      
+      "r" '(:ignore t :which-key "refile")
+      "rr" '(org-refile :which-key "Refile")
+      "rR" '(org-refile-reverse :which-key "Reverse refile")
+      
+      "s" '(:ignore t :which-key "tree/subtree")
+      "sa" '(org-toggle-archive-tag :which-key "Archive tag")
+      "sb" '(org-tree-to-indirect-buffer :which-key "Indirect buffer")
+      "sc" '(org-clone-subtree-with-time-shift :which-key "Clone")
+      "sd" '(org-cut-subtree :which-key "Cut")
+      "sh" '(org-promote-subtree :which-key "Promote")
+      "sj" '(org-move-subtree-down :which-key "Move down")
+      "sk" '(org-move-subtree-up :which-key "Move up")
+      "sl" '(org-demote-subtree :which-key "Demote")
+      "sn" '(org-narrow-to-subtree :which-key "Narrow")
+      "sr" '(org-refile :which-key "Refile")
+      "ss" '(org-sparse-tree :which-key "Sparse tree")
+      "sA" '(org-archive-subtree-default :which-key "Archive")
+      "sN" '(widen :which-key "Widen")
+      "sS" '(org-sort :which-key "Sort")
+      
+      "p" '(:ignore t :which-key "priority")
+      "pd" '(org-priority-down :which-key "Down")
+      "pp" '(org-priority :which-key "Set priority")
+      "pu" '(org-priority-up :which-key "Up")))
+
+  (with-eval-after-load 'org-agenda
+    (my/local-leader
+      :keymaps 'org-agenda-mode-map
+      "d" '(:ignore t :which-key "date/deadline")
+      "dd" '(org-agenda-deadline :which-key "Deadline")
+      "ds" '(org-agenda-schedule :which-key "Schedule")
+      
+      "c" '(:ignore t :which-key "clock")
+      "cc" '(org-agenda-clock-cancel :which-key "Cancel")
+      "cg" '(org-agenda-clock-goto :which-key "Goto")
+      "ci" '(org-agenda-clock-in :which-key "Clock in")
+      "co" '(org-agenda-clock-out :which-key "Clock out")
+      "cr" '(org-agenda-clockreport-mode :which-key "Report mode")
+      "cs" '(org-agenda-show-clocking-issues :which-key "Show issues")
+      
+      "p" '(:ignore t :which-key "priority")
+      "pd" '(org-agenda-priority-down :which-key "Down")
+      "pp" '(org-agenda-priority :which-key "Set priority")
+      "pu" '(org-agenda-priority-up :which-key "Up")
+      
+      "q" '(org-agenda-set-tags :which-key "Set tags")
+      "r" '(org-agenda-refile :which-key "Refile")
+      "t" '(org-agenda-todo :which-key "Todo"))
+    
+    (general-define-key
+     :keymaps 'org-agenda-mode-map
+     :states 'motion
+     "C-SPC" 'org-agenda-show-and-scroll-up))
+
+  (with-eval-after-load 'dirvish
+    (general-def dirvish-mode-map
+      "TAB" #'dirvish-subtree-toggle
+      "q" #'dirvish-quit
+      "zg" #'dired-gitignore-global-mode))
+
+  ;; Super agenda header navigation
+  (general-def org-super-agenda-header-map
+    "k" #'org-agenda-prevous-line
+    "j" #'org-agenda-next-line)
+
+  ;; Inc/Dec numbers
+  (general-define-key
+   "M-=" 'evil-numbers/inc-at-pt
+   "M--" 'evil-numbers/dec-at-pt
+   "M-+" 'evil-numbers/inc-at-pt-incremental
+   "M-_" 'evil-numbers/dec-at-pt-incremental))
+
+(use-package deadgrep
+  :straight t
+  :defer t
+  :after evil)
+
+(use-package all-the-icons
+  :straight t
+  :defer t
+  :if (display-graphic-p))
+
+(use-package all-the-icons-dired
+  :straight t
+  ;; :defer t -- Do not defer
+)
+
+(use-package nix-ts-mode
+  :straight t
+  :mode "\\.nix\\'")
+
+(use-package treesit
+  :straight (:type built-in)
+  :init
+  (dolist (mapping
+           '((python-mode . python-ts-mode)
+             (css-mode . css-ts-mode)
+             (typescript-mode . typescript-ts-mode)
+             (js-mode . typescript-ts-mode)
+             (js2-mode . typescript-ts-mode)
+             (c-mode . c-ts-mode)
+             (c++-mode . c++-ts-mode)
+             (c-or-c++-mode . c-or-c++-ts-mode)
+             (bash-mode . bash-ts-mode)
+             (json-mode . json-ts-mode)
+             (js-json-mode . json-ts-mode)
+             (sh-mode . bash-ts-mode)
+             (sh-base-mode . bash-ts-mode)
+             (nix-mode . nix-ts-mode)
+             (yaml-mode . yaml-ts-mode)
+             (zig-mode . zig-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping))
+  
+  :mode (("\\.tsx\\'" . tsx-ts-mode)
+         ("\\.ts\\'"  . typescript-ts-mode)
+         ("\\.js\\'"  . typescript-ts-mode)
+         ("\\.mjs\\'" . typescript-ts-mode)
+         ("\\.mts\\'" . typescript-ts-mode)
+         ("\\.cjs\\'" . typescript-ts-mode)
+         ("\\.jsx\\'" . tsx-ts-mode)
+         ("\\.json\\'" .  json-ts-mode)
+         ("\\.Dockerfile\\'" . dockerfile-ts-mode)
+         ("\\.prisma\\'" . prisma-ts-mode)
+         ("\\.go\\'" . go-ts-mode)
+         ("\\.yaml\\'" . yaml-ts-mode)
+         ("\\.yml\\'" . yaml-ts-mode)
+         ("\\.py\\'" . python-ts-mode))
+  
+  :preface
+  (defun os/setup-install-grammars ()
+    "Install Tree-sitter grammars if they are absent."
+    (interactive)
+    (dolist (grammar
+             '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.25.0"))
+               (bash "https://github.com/tree-sitter/tree-sitter-bash")
+               (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.23.2"))
+               (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.25.0" "src"))
+               (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.24.8"))
+               (python . ("https://github.com/tree-sitter/tree-sitter-python" "v0.25.0"))
+               (go "https://github.com/tree-sitter/tree-sitter-go" "v0.25.0")
+               (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+               (make "https://github.com/alemuller/tree-sitter-make")
+               (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+               (cmake "https://github.com/uyha/tree-sitter-cmake")
+               (c "https://github.com/tree-sitter/tree-sitter-c")
+               (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+               (toml "https://github.com/tree-sitter/tree-sitter-toml")
+               (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))
+               (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "typescript/src"))
+               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))
+               (prisma "https://github.com/victorhqc/tree-sitter-prisma")
+               (nix . ("https://github.com/nix-community/tree-sitter-nix" "v0.3.0"))
+               (zig "https://github.com/tree-sitter-grammars/tree-sitter-zig")))
+      (add-to-list 'treesit-language-source-alist grammar)
+      (unless (treesit-language-available-p (car grammar))
+        (treesit-install-language-grammar (car grammar)))))
+  
+  :config
+  (os/setup-install-grammars))
+
+(use-package copilot
+  :straight t
+  :defer t
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word))
+  :config
+  (add-to-list 'copilot-indentation-alist '(prog-mode 2))
+  (add-to-list 'copilot-indentation-alist '(org-mode 2))
+  (add-to-list 'copilot-indentation-alist '(text-mode 2))
+  (add-to-list 'copilot-indentation-alist '(closure-mode 2))
+  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2)))
+
+(use-package gptel
+  :straight t
+  :defer t
+  :config
+  ;; Default GPTel model and backend
+  (setq gptel-model 'claude-sonnet-4
+        gptel-backend (gptel-make-gh-copilot "Copilot"))
+
+  ;; Expert mode
+  (setq gptel-expert-commands t)
+  ;; Autoscroll when AI is typing
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+
+  ;; Register backends
+  (gptel-make-gemini "Gemini" :stream t :key gptel-api-key)
+  (gptel-make-anthropic "Claude" :stream t :key gptel-api-key)
+  (gptel-make-openai "OpenRouter"
+    :host "openrouter.ai"
+    :endpoint "/api/v1/chat/completions"
+    :stream t
+    :key gptel-api-key
+    :models '(
+              google/gemini-2.5-pro
+              google/gemini-2.5-flash
+              anthropic/claude-sonnet-4.5)))
+
+(use-package gptel-magit
+  :straight t
+  :defer t
+  :hook (magit-mode . gptel-magit-install))
+
+(use-package vterm
+  :straight t
+  :defer t)
+
+(use-package vterm-toggle
+  :straight t
+  :defer t
+  :after (vterm)
+  :config
+  (setq vterm-toggle-fullscreen-p nil)
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                   (let ((buffer (get-buffer buffer-or-name)))
+                     (with-current-buffer buffer
+                       (or (equal major-mode 'vterm-mode)
+                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                 (display-buffer-reuse-window display-buffer-at-bottom)
+                 (reusable-frames . visible)
+                 (window-height . 0.3))))
+
+(use-package helm
+  :straight t
+  :defer t
+  :bind (:map helm-map
+              ("C-w" . backward-kill-word))
+  :config
+  (setq helm-completion-style 'emacs))
+
+(use-package helm-icons
+  :straight '(helm-icons :type git :host github :repo "yyoncho/helm-icons")
+  :defer t
+  :config
+  (setq helm-icons-provider 'all-the-icons)
+  :init
+  (helm-icons-enable))
+
+(use-package helm-lsp
+  :straight t
+  :defer t
+  :after (helm lsp-mode)
+  :init
+  (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
+
+(use-package helm-xref
+  :straight t
+  :defer t
+  :after helm)
+
+(use-package magit
+  :straight t
+  ;; :defer t -- Do not defer
+)
+
+(use-package forge
+  :straight t
+  :after magit)
+
+(use-package magit-todos
+  :straight t
+  ;; :defer t -- Do not defer
+  :after magit
+  :config (magit-todos-mode +1))
+
+(setq auth-sources '("~/.authinfo.gpg"))
+
+(use-package lsp-mode
+  :straight t
+  :defer t
+  :diminish "LSP"
+  :hook ((lsp-mode . lsp-diagnostics-mode)
+         (lsp-mode . lsp-enable-which-key-integration)
+         ((tsx-ts-mode
+           typescript-ts-mode
+           js-ts-mode
+           go-ts-mode
+           zig-ts-mode
+           python-ts-mode) . lsp-deferred))
+  :custom
+  (lsp-keymap-prefix "C-c l")
+  (lsp-completion-provider :none)
+  (lsp-diagnostics-provider :flycheck)
+  (lsp-session-file (locate-user-emacs-file ".lsp-session"))
+  (lsp-log-io nil)                      ; IMPORTANT! Use only for debugging! Drastically affects performance
+  (lsp-keep-workspace-alive nil)        ; Close LSP server if all project buffers are closed
+  (lsp-idle-delay 0.5)                  ; Debounce timer for `after-change-function'
+  ;; core
+  (lsp-enable-xref t)                   ; Use xref to find references
+  (lsp-auto-configure t)                ; Used to decide between current active servers
+  (lsp-eldoc-enable-hover t)            ; Display signature information in the echo area
+  (lsp-enable-dap-auto-configure t)     ; Debug support
+  (lsp-enable-file-watchers nil)
+  (lsp-enable-folding nil)              ; I disable folding since I use origami
+  (lsp-enable-imenu t)
+  (lsp-enable-indentation nil)          ; I use prettier
+  (lsp-enable-links nil)                ; No need since we have `browse-url'
+  (lsp-enable-on-type-formatting nil)   ; Prettier handles this
+  (lsp-enable-suggest-server-download t) ; Useful prompt to download LSP providers
+  (lsp-enable-symbol-highlighting t)     ; Shows usages of symbol at point in the current buffer
+  (lsp-enable-text-document-color nil)   ; This is Treesitter's job
+
+  (lsp-ui-sideline-show-hover nil)      ; Sideline used only for diagnostics
+  (lsp-ui-sideline-diagnostic-max-lines 20) ; 20 lines since typescript errors can be quite big
+  ;; completion
+  (lsp-completion-enable t)
+  (lsp-completion-enable-additional-text-edit t) ; Ex: auto-insert an import for a completion candidate
+  (lsp-enable-snippet t)                         ; Important to provide full JSX completion
+  (lsp-completion-show-kind t)                   ; Optional
+  ;; headerline
+  (lsp-headerline-breadcrumb-enable nil)  ; Optional, I don't like the breadcrumbs
+  (lsp-headerline-breadcrumb-enable-diagnostics nil) ; Don't make them red, too noisy
+  (lsp-headerline-breadcrumb-enable-symbol-numbers nil)
+  (lsp-headerline-breadcrumb-icons-enable nil)
+  ;; modeline
+  (lsp-modeline-code-actions-enable nil) ; Modeline should be relatively clean
+  (lsp-modeline-diagnostics-enable nil)  ; Already supported through `flycheck'
+  (lsp-modeline-workspace-status-enable nil) ; Modeline displays "LSP" when lsp-mode is enabled
+  (lsp-signature-doc-lines 1)                ; Don't raise the echo area. It's distracting
+  (lsp-ui-doc-use-childframe t)              ; Show docs for symbol at point
+  (lsp-eldoc-render-all nil)            ; This would be very useful if it would respect `lsp-signature-doc-lines', currently it's distracting
+  ;; lens
+  (lsp-lens-enable nil)                 ; Optional, I don't need it
+  ;; semantic
+  (lsp-semantic-tokens-enable nil)      ; Related to highlighting, and we defer to treesitter
+  :init
+  (setq lsp-use-plists t))
+
+(use-package lsp-ui
+  :straight t
+  :defer t
+  :commands
+  (lsp-ui-doc-show
+   lsp-ui-doc-glance)
+  :hook (lsp-mode . lsp-ui-mode)
+  :after (lsp-mode evil)
+  :config (setq lsp-ui-doc-enable t
+                evil-lookup-func #'lsp-ui-doc-glance ; Makes K in evil-mode toggle the doc for symbol at point
+                lsp-ui-doc-show-with-cursor nil      ; Don't show doc when cursor is over symbol - too distracting
+                lsp-ui-doc-include-signature t       ; Show signature
+                lsp-ui-doc-position 'at-point))
+
+(use-package hl-todo
+  :straight t
+  ;; :defer t -- Do not defer
+  :after magit
+  :config
+  (add-hook 'magit-log-wash-summary-hook
+            #'hl-todo-search-and-highlight t)
+  (add-hook 'magit-revision-wash-message-hook
+            #'hl-todo-search-and-highlight t))
+
+(use-package flycheck
+  :straight t
+  :defer t
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+  :bind (:map flycheck-mode-map
+              ("M-n" . flycheck-next-error) ; optional but recommended error navigation
+              ("M-p" . flycheck-previous-error)))
+
+(use-package which-key
+  :straight t
+  :defer t
+  :config
+  (setq which-key-idle-delay 0.3
+        which-key-sort-order 'which-key-key-order-alpha)
+  (which-key-setup-side-window-bottom)
+  :init
+  (which-key-mode))
+
+(use-package doom-modeline
+  :straight t
+  :defer t
+  :init
+  (doom-modeline-mode 1)
+  :config
+  (setq doom-modeline-position-column-line-format '("L%l:%c"))
+  (column-number-mode t))
+
+(use-package ace-window
+  :straight t
+  :defer t
+  :init
+  (global-set-key (kbd "M-o") 'ace-window))
+
+(use-package yasnippet
+  :straight t
+  :defer t
+  :config
+  (yas-reload-all)
+  (yas-global-mode)
+
+  ;; Disable ancient React snippets
+  (add-hook 'rjsx-mode-hook
+            (lambda ()
+              (yas-minor-mode -1))))
+
+(use-package yasnippet-snippets
+  :straight t
+  :defer t
+  :after yasnippet
+  :config
+  (yasnippet-snippets-initialize))
+
+(use-package auto-yasnippet
+  :straight t
+  :defer t
+  :after yasnippet)
+
+;;;; Code Completion
+(use-package corfu
+  :straight t
+  :defer t
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                 ; Allows cycling through candidates
+  (corfu-auto t)                  ; Enable auto completion
+  (corfu-auto-prefix 2)           ; Minimum length of prefix for completion
+  (corfu-auto-delay 0)            ; No delay for completion
+  (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that number of seconds
+  (corfu-preview-current 'insert) ; insert previewed candidate
+  ;; (corfu-preselect 'first)     ; Enable to pre-select the first option
+  (corfu-preselect 'prompt)
+  (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
+  :bind (:map corfu-map
+              ("M-SPC"      . corfu-insert-separator)
+              ("TAB"        . corfu-next)
+              ([tab]        . corfu-next)
+              ("S-TAB"      . corfu-previous)
+              ([backtab]    . corfu-previous)
+              ("S-<return>" . corfu-insert)
+              ("RET"        . corfu-insert))
+
+  :init
+  (global-corfu-mode)
+  (corfu-history-mode)
+  (corfu-popupinfo-mode))
+
+(use-package undo-fu-session
+  :straight t
+  :config
+  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+  :init
+  (undo-fu-session-global-mode))
+
+(use-package vundo
+  :straight t
+  :defer t
+  :config
+  (setq vundo-glyph-alist vundo-unicode-symbols))
+
+(use-package prettier-js
+  :straight t
+  :defer t
+  :config
+  (setq prettier-js-command "prettierd")
+  :hook ((typescript-ts-mode . prettier-js-mode)
+         (js-ts-mode         . prettier-js-mode)
+         (web-mode           . prettier-js-mode)
+         (tsx-ts-mode        . prettier-js-mode)))
+
+(use-package git-gutter
+  :straight t
+  :hook (prog-mode . git-gutter-mode)
+  :config
+  (setq git-gutter:update-interval 0.02))
+
+(use-package git-gutter-fringe
+  :straight t
+  :config
+  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
+
+(use-package marginalia
+  :straight t
+  :defer t
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :init
+  (marginalia-mode))
+
+(use-package dtrt-indent
+  :straight t
+  :defer t
+  :init
+  (dtrt-indent-global-mode +1))
+
+(use-package go-mode
+  :straight t
+  :defer t
+  :init
+  (add-hook 'go-mode-hook #'lsp-deferred)
+  (defun lsp-go-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t))
+  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+  (add-hook 'go-mode-hook
+            (lambda ()
+              (defalias 'godef-jump #'lsp-find-definition)
+              (defalias 'godef-describe #'lsp-ui-doc-glance))))
+
+(use-package activities
+  :straight t
+  :defer t
+  :init
+  (activities-mode))
+
+(use-package orderless
+  :straight t
+  :defer t
+  :init
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides
+        '((file (styles basic partial-completion))))
+
+  ;; Enable fuzzy / flex matching
+  (setq orderless-matching-styles
+        '(orderless-literal
+          orderless-regexp
+          orderless-flex)))
+
+(use-package docker
+  :straight t
+  :defer t)
+
+(use-package git-timemachine
+  :straight t)
+
+;; @see https://emacs.stackexchange.com/questions/9842/disable-evil-mode-when-git-timemachine-mode-is-activated
+(eval-after-load 'git-timemachine
+  '(progn
+     (evil-make-overriding-map git-timemachine-mode-map 'normal)
+     (add-hook 'git-timemachine-mode-hook #'evil-normalize-keymaps)))
+
+(use-package markdown-toc
+  :straight t
+  :defer t)
+
+;; @see https://github.com/doomemacs/doomemacs/blob/51154d1d50c9d3a375e4454e959f0687612fbd60/modules/lang/markdown/config.el#L18
+(use-package markdown-mode
+  :straight t
+  :defer t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init
+  (setq markdown-italic-underscore t
+        markdown-gfm-additional-languages '("sh")
+        markdown-make-gfm-checkboxes-buttons t
+        markdown-fontify-whole-heading-line t
+        markdown-fontify-code-blocks-natively t
+
+        ;; `+markdown-compile' offers support for many transpilers (see
+        ;; `+markdown-compile-functions'), which it tries until one succeeds.
+        markdown-command #'+markdown-compile
+        ;; This is set to `nil' by default, which causes a wrong-type-arg error
+        ;; when you use `markdown-open'. These are more sensible defaults.
+        markdown-open-command
+        (cond ((featurep :system 'macos) "open")
+              ((featurep :system 'linux) "xdg-open"))
+
+        ;; A sensible and simple default preamble for markdown exports that
+        ;; takes after the github asthetic (plus highlightjs syntax coloring).
+        markdown-content-type "application/xhtml+xml"
+        markdown-css-paths
+        '("https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css"
+          "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github.min.css")
+        markdown-xhtml-header-content
+        (concat "<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>"
+                "<style> body { box-sizing: border-box; max-width: 740px; width: 100%; margin: 40px auto; padding: 0 10px; } </style>"
+                "<script id='MathJax-script' async src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'></script>"
+                "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js'></script>"
+                "<script>document.addEventListener('DOMContentLoaded', () => { document.body.classList.add('markdown-body'); document.querySelectorAll('pre[lang] > code').forEach((code) => { code.classList.add(code.parentElement.lang); }); document.querySelectorAll('pre > code').forEach((code) => { hljs.highlightBlock(code); }); });</script>")
+        ;; Disabled to prevent accidentally clicking links while focusing Emacs
+        ;; or a markdown buffer. We prefer keyboard-centric workflows anyway and
+        ;; already have ffap or lookup commands for opening links at point (e.g.
+        ;; gf or pressing RET on a link).
+        markdown-mouse-follow-link nil))
+
+(use-package protobuf-mode
+  :straight t
+  :defer t)
+
+;; @see https://github.com/svaante/dape
+(use-package dape
+  :straight t
+  :defer t
+  :preface
+  (setq dape-key-prefix nil)
+  :custom
+  (dape-breakpoint-global-mode +1)
+  (dape-buffer-window-arrangement 'right)
+  (dape-cwd-function #'projectile-project-root))
+
+(use-package repeat
+  :straight nil
+  :custom
+  (repeat-mode +1))
+
+(use-package emacs
+  :straight nil
+  :custom
+  (window-sides-vertical t))
+
+(use-package vertico
+  :straight t
+  :defer t
+  :custom
+  (vertico-count 20)
+  (vertico-cycle t)
+  :init
+  (vertico-mode))
+
+(use-package emacs
+  :straight nil
+  :custom
+  (context-menu-mode t)
+  (enable-recursive-minibuffers t)
+  (read-extended-command-predicate #'command-completion-default-include-p)
+  (minibuffer-prompt-properties
+   '(read-only t cursor-intangible t face minibuffer-prompt)))
+
+(use-package org-roam
+  :straight t
+  ;; :defer t -- Do not defer
+  :after org
+  :init
+  (setq org-roam-directory "~/repos/org/roam/")
+  :config
+  (org-roam-db-autosync-mode))
+
+(use-package restart-emacs
+  :straight t)
+
+(use-package grip-mode
+  :straight t
+  :defer t
+  :config
+  (setq grip-command 'auto))
+
+(straight-use-package '(org-cv :host gitlab
+                               :repo "Titan-C/org-cv"
+                               :branch "master"))
+
+(with-eval-after-load 'org
+  (require 'ox-moderncv)
+
+  (setq org-latex-compiler "lualatex")
+  (setq org-preview-latex-default-process 'dvisvgm))
+
+(use-package pdf-tools
+  :straight t
+  :defer t
+  :init
+  (pdf-loader-install))
+
+(use-package eldoc-box
+  :straight t
+  :hook
+  (prog-mode . eldoc-box-hover-at-point-mode)
+  :init
+  (require 'eldoc-box)
+  :config
+  (setq eldoc-box-only-multi-line t)
+  (add-hook 'eldoc-box-buffer-setup-hook #'eldoc-box-prettify-ts-errors 0 t)
+  (set-face-attribute 'eldoc-box-border nil :background (face-attribute 'mode-line-inactive :background)))
+
+(use-package fancy-compilation
+  :straight t
+  :commands (fancy-compilation-mode)
+  :init
+  (fancy-compilation-mode))
+
+(use-package rainbow-delimiters
+  :straight t
+  :defer t
+  :hook
+  (prog-mode . rainbow-delimiters-mode)
+  :config
+  (set-face-attribute 'rainbow-delimiters-mismatched-face nil :foreground "orange")
+  (set-face-attribute 'rainbow-delimiters-unmatched-face  nil :foreground "#f0008b"))
+
+(use-package rainbow-mode
+  :straight t
+  :defer t
+  :hook
+  (prog-mode . rainbow-mode))
+
+(use-package casual
+  :straight t
+  :defer t
+  :config
+  ;; EditKit main menu
+  (with-eval-after-load 'evil
+    (evil-define-key '(normal insert visual) 'global (kbd "C-o") #'casual-editkit-main-tmenu))
+  
+  :init
+  (use-package org-agenda
+    :straight (:type built-in)
+    :defer t
+    :commands (org-agenda-clock-goto)
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) org-agenda-mode-map (kbd "C-o") #'casual-agenda-tmenu)
+      (evil-define-key '(normal emacs) org-agenda-mode-map (kbd "M-j") #'org-agenda-clock-goto)
+      (evil-define-key '(normal emacs) org-agenda-mode-map (kbd "J") #'bookmark-jump)))
+  
+  (use-package bookmark
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) bookmark-bmenu-mode-map (kbd "C-o") #'casual-bookmarks-tmenu)
+      (evil-define-key '(normal emacs) bookmark-bmenu-mode-map (kbd "J") #'bookmark-jump)))
+  
+  (use-package calc
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) calc-mode-map (kbd "C-o") #'casual-calc-tmenu)))
+  
+  (use-package calc-ext
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) calc-alg-map (kbd "C-o") #'casual-calc-tmenu)))
+  
+  (use-package calendar
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) calendar-mode-map (kbd "C-o") #'casual-calendar)))
+  
+  (use-package dired
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) dired-mode-map (kbd "C-o") #'casual-dired-tmenu)
+      (evil-define-key '(normal emacs) dired-mode-map (kbd "s") #'casual-dired-sort-by-tmenu)
+      (evil-define-key '(normal emacs) dired-mode-map (kbd "/") #'casual-dired-search-replace-tmenu)))
+  
+  (use-package ibuffer
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) ibuffer-mode-map (kbd "C-o") #'casual-ibuffer-tmenu)
+      (evil-define-key '(normal emacs) ibuffer-mode-map (kbd "F") #'casual-ibuffer-filter-tmenu)
+      (evil-define-key '(normal emacs) ibuffer-mode-map (kbd "s") #'casual-ibuffer-sortby-tmenu)
+      (evil-define-key '(normal emacs) ibuffer-mode-map (kbd "{") #'ibuffer-backwards-next-marked)
+      (evil-define-key '(normal emacs) ibuffer-mode-map (kbd "}") #'ibuffer-forward-next-marked)
+      (evil-define-key '(normal emacs) ibuffer-mode-map (kbd "[") #'ibuffer-backward-filter-group)
+      (evil-define-key '(normal emacs) ibuffer-mode-map (kbd "]") #'ibuffer-forward-filter-group)
+      (evil-define-key '(normal emacs) ibuffer-mode-map (kbd "$") #'ibuffer-toggle-filter-group)))
+  
+  (use-package info
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) Info-mode-map (kbd "C-o") #'casual-info-tmenu)
+      (evil-define-key '(normal emacs) Info-mode-map (kbd "M-[") #'Info-history-back)
+      (evil-define-key '(normal emacs) Info-mode-map (kbd "M-]") #'Info-history-forward)
+      (evil-define-key '(normal emacs) Info-mode-map (kbd "/") #'Info-search)
+      (evil-define-key '(normal emacs) Info-mode-map (kbd "B") #'bookmark-set)))
+  
+  (use-package isearch
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) isearch-mode-map (kbd "C-o") #'casual-isearch-tmenu)))
+  
+  (use-package re-builder
+    :straight (:type built-in)
+    :defer t
+    :config
+    (with-eval-after-load 'evil
+      (evil-define-key '(normal emacs) reb-mode-map (kbd "C-o") #'casual-re-builder-tmenu)
+      (evil-define-key '(normal emacs) reb-lisp-mode-map (kbd "C-o") #'casual-re-builder-tmenu))))
+
+(use-package literate-calc-mode
+  :straight t
+  :defer t)
+
+(use-package zoom
+  :straight t
+  :defer t
+  :init
+  (custom-set-variables
+   '(zoom-mode t)
+   '(zoom-size '(0.618 . 0.618))
+   '(zoom-ignored-major-modes '(vterm-mode))))
+
+(use-package circe
+  :straight t
+  :defer t
+  :init
+  (enable-circe-color-nicks)
+  (enable-circe-display-images)
+  (enable-lui-track-bar)
+  (enable-lui-irc-colors)
+  :config
+  (setq lui-flyspell-p t
+        lui-flyspell-alist '((".*" "american")))
+  (setq helm-mode-no-completion-in-region-in-modes
+        '(circe-channel-mode
+          circe-query-mode
+          circe-server-mode))
+  (setq circe-use-cycle-completion t)
+  (setq circe-reduce-lurker-spam t))
+
+(use-package swiper-helm
+  :straight t
+  :defer t)
+
+(use-package zig-mode
+  :straight t
+  :defer t
+  :mode (("\\.zig\\'" . zig-ts-mode)
+         ("\\.zon\\'" . zig-ts-mode))
+  :after (treesit zig-ts-mode)
+  :config
+  (setq lsp-zig-zls-executable (executable-find "zls"))
+  (setq lsp-zig-zig-exe-path (executable-find "zig")))
+
+(use-package zig-ts-mode
+  :straight t
+  :defer t
+  :mode (("\\.zig\\'" . zig-ts-mode)
+         ("\\.zon\\'" . zig-ts-mode)))
+
+(use-package ox-typst
+  :straight t
+  :after org
+  :config
+  (setq org-typst-from-latex-environment #'org-typst-from-latex-with-naive
+      org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
+
+(use-package xterm-color
+  :straight t
+  :defer t
+  :config
+  (setq compilation-environment '("TERM=xterm-256color"))
+  :init
+  (define-advice compilation-filter (:around (f proc string) xterm-color)
+    (funcall f proc (xterm-color-filter string))))
+
+(use-package vimish-fold
+  :straight t
+  :defer t
+  :after evil)
+
+(use-package evil-vimish-fold
+  :straight t
+  :defer t
+  :after vimish-fold
+  :init
+  (setq evil-vimish-fold-mode-lighter " ⮒")
+  (setq evil-vimish-fold-target-modes '(prog-mode conf-mode text-mode))
+  :config
+  (global-evil-vimish-fold-mode))
+
+(use-package pyvenv
+  :straight t
+  :defer t
+  :mode ("\\.py\\'" . pyvenv-mode)
+  :after lsp-mode
+  :config
+  (setq pyvenv-mode-line-indicator
+        '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] "))))
+
+(use-package lsp-pyright
+  :straight t
+  :defer t
+  :custom (lsp-pyright-langserver-command "basedpyright")
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp-deferred))))
+
+;; (use-package lsp-ltex-plus
+;;   :straight (lsp-ltex-plus :type git
+;;                            :host github
+;;                            :repo "emacs-languagetool/lsp-ltex-plus"
+;;                            :branch "master")
+;;   :init
+;;   (defun +my/lsp-ltex-setup ()
+;;     (require 'lsp-ltex-plus)
+;;     (lsp-deferred))
+;;   :hook ((org-mode markdown-mode text-mode latex-mode) . +my/lsp-ltex-setup)
+;;   :config
+;;   (setq lsp-ltex-plus-version "18.6.1")
+;;   (setq lsp-ltex-plus-language "en-US")
+;; 
+;;   (setq lsp-ltex-plus-dictionary '(:en-US ["npm"
+;;                                            "webpack"]))
+;; 
+;;   ;; Force recalculation of combined dictionary
+;;   (setq lsp-ltex-plus--combined-dictionary
+;;         (lsp-ltex-plus-combine-plists lsp-ltex-plus-dictionary
+;;                                       lsp-ltex-plus--stored-dictionary)))
