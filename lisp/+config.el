@@ -1,14 +1,101 @@
-(use-package ace-window
-  :straight t
-  :defer t
-  :init
-  (global-set-key (kbd "M-o") 'ace-window))
+(setq-default fill-column 120
+              delete-trailing-lines t)
 
-(use-package activities
+;; Use auto-fill in these modes at 120
+(dolist (hook '(text-mode-hook
+                markdown-mode-hook
+                org-mode-hook
+                prog-mode-hook))
+  (add-hook hook #'auto-fill-mode))
+
+;; Git commit uses 72 char limit
+(add-hook 'git-commit-mode-hook
+          (lambda ()
+            (setq fill-column 72)
+            (auto-fill-mode 1)))
+
+;; Persist entries
+(server-mode +1)
+(save-place-mode +1)
+(savehist-mode +1)
+(recentf-mode +1)
+
+;; Smart parenthesis
+(electric-pair-mode 1)
+
+;; Required for self-signed cert (for IRC)
+(setq gnutls-verify-error nil)
+
+;; Smooth scrolling
+(pixel-scroll-precision-mode +1)
+
+;; Keep compilation window at the bottom
+(setq split-height-threshold nil)
+(setq split-width-threshold most-positive-fixnum)
+
+;; Hide Warnings and Compile-Log windows (untested)
+(add-to-list 'display-buffer-alist
+             `(,(rx bos "*" (or "Warnings" "Compile-Log") "*" eos)
+               (display-buffer-no-window)
+               (allow-no-window . t)))
+
+;; Enable code-folding in code buffers
+(add-hook 'prog-mode-hook (lambda ()
+                            (hs-minor-mode +1)))
+
+(use-package envrc
+  :straight t
+  :defer t
+  :hook (after-init . envrc-global-mode))
+
+(use-package org
+  :straight (:type built-in)
+  :commands (org-mode org-agenda)
+  :mode ("\\.org\\'" . org-mode)
+  :config
+  (setq org-directory "~/repos/org")
+  (setq org-agenda-files '("~/repos/org/todo.org"))
+  :custom
+  (org-startup-folded t)
+  (org-startup-indented t)
+  (org-pretty-entities t)
+  (org-hide-emphasis-markers t)
+  (org-startup-with-inline-images t)
+  (org-image-actual-width '(300))
+  (org-ellipsis " ▾")
+  (org-agenda-start-with-log-mode t)
+  (org-log-done 'time)
+  (org-log-into-drawer t))
+
+(use-package org-bullets
+  :straight t
+  :defer t
+  :after org
+  :init
+  (require 'org-bullets)
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+(use-package org-archive
+  :straight (:type built-in)
+  :defer t
+  :after org
+  :config
+  (setq org-archive-location "archive.org::datetree/"))
+
+(use-package dired-gitignore
+  :straight t
+  :defer t
+  :after dired
+  :hook (dired-mode . #'dired-gitignore-global-mode))
+
+(use-package dirvish
   :straight t
   :defer t
   :init
-  (activities-mode))
+  (dirvish-override-dired-mode)
+  :config
+  (setq dirvish-attributes '(vc-state subtree-state all-the-icons collapse file-size))
+  (setq dirvish-mode-line-format '(:left (sort symlink) :right (omit yank index))))
 
 ;; Inspired by: https://www.youtube.com/watch?v=a_WNtuefREM
 
@@ -101,6 +188,727 @@
    '(org-agenda-date-weekend ((t (:inherit outline-2 :height 1.15))))
    '(org-agenda-date-weekend-today ((t (:inherit outline-4 :height 1.15))))
    '(org-super-agenda-header ((t (:inherit custom-button :weight bold :height 1.05))))))
+
+(use-package org-modern
+  :straight t
+  :after '(org)
+  :hook (org-mode . org-modern-mode)
+  :hook (org-agenda-finalize . org-modern-agenda)
+  :config
+  ;; Minimal UI
+  (package-initialize)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1)
+  (modus-themes-load-operandi)
+
+  ;; Choose some fonts
+  ;; (set-face-attribute 'default nil :family "Iosevka")
+  ;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
+  ;; (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
+
+  ;; Add frame borders and window dividers
+  (modify-all-frames-parameters
+   '((right-divider-width . 40)
+     (internal-border-width . 40)))
+  (dolist (face '(window-divider
+                  window-divider-first-pixel
+                  window-divider-last-pixel))
+    (face-spec-reset-face face)
+    (set-face-foreground face (face-attribute 'default :background)))
+  (set-face-background 'fringe (face-attribute 'default :background))
+
+  (setq
+   ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-agenda-tags-column 0
+   org-ellipsis "…")
+
+  (global-org-modern-mode))
+
+(use-package evil
+  :straight t
+  :init
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump t)
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-undo-system 'undo-redo)
+  :config
+  (evil-mode 1))
+
+(use-package evil-collection
+  :straight t
+  :after evil
+  :init
+  (setq evil-collection-want-find-usages-bindings t)
+  (setq evil-collection-calendar-want-org-bindings t)
+  :config
+  (evil-collection-init))
+
+(use-package evil-mc
+  :straight t
+  :after evil
+  :init
+  (require 'evil-mc)
+  (global-evil-mc-mode 1))
+
+(use-package evil-org
+  :straight t
+  :after (evil org)
+  :hook (org-mode . (lambda () evil-org-mode))
+  :config
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
+
+(use-package evil-surround
+  :straight t
+  :after evil
+  :config
+  (global-evil-surround-mode 1))
+
+(use-package evil-numbers
+  :straight t
+  :defer t
+  :after evil)
+
+(use-package devdocs
+  :straight t
+  :defer t
+  :demand t)
+
+(defun +my/devdocs-choose ()
+  (interactive)
+  (devdocs-lookup t))
+
+(use-package deadgrep
+  :straight t
+  :defer t
+  :after evil)
+
+(use-package all-the-icons
+  :straight t
+  :defer t
+  :if (display-graphic-p))
+
+(use-package all-the-icons-dired
+  :straight t
+  ;; :defer t -- Do not defer
+)
+
+(use-package nix-ts-mode
+  :straight t
+  :mode "\\.nix\\'")
+
+(use-package treesit
+  :straight (:type built-in)
+  :init
+  (dolist (mapping
+           '((python-mode . python-ts-mode)
+             (css-mode . css-ts-mode)
+             (typescript-mode . typescript-ts-mode)
+             (js-mode . typescript-ts-mode)
+             (js2-mode . typescript-ts-mode)
+             (c-mode . c-ts-mode)
+             (c++-mode . c++-ts-mode)
+             (c-or-c++-mode . c-or-c++-ts-mode)
+             (bash-mode . bash-ts-mode)
+             (json-mode . json-ts-mode)
+             (js-json-mode . json-ts-mode)
+             (sh-mode . bash-ts-mode)
+             (sh-base-mode . bash-ts-mode)
+             (nix-mode . nix-ts-mode)
+             (yaml-mode . yaml-ts-mode)
+             (zig-mode . zig-ts-mode)))
+    (add-to-list 'major-mode-remap-alist mapping))
+  
+  :mode (("\\.tsx\\'" . tsx-ts-mode)
+         ("\\.ts\\'"  . typescript-ts-mode)
+         ("\\.js\\'"  . typescript-ts-mode)
+         ("\\.mjs\\'" . typescript-ts-mode)
+         ("\\.mts\\'" . typescript-ts-mode)
+         ("\\.cjs\\'" . typescript-ts-mode)
+         ("\\.jsx\\'" . tsx-ts-mode)
+         ("\\.json\\'" .  json-ts-mode)
+         ("\\.Dockerfile\\'" . dockerfile-ts-mode)
+         ("\\.prisma\\'" . prisma-ts-mode)
+         ("\\.go\\'" . go-ts-mode)
+         ("\\.yaml\\'" . yaml-ts-mode)
+         ("\\.yml\\'" . yaml-ts-mode)
+         ("\\.py\\'" . python-ts-mode))
+  
+  :preface
+  (defun os/setup-install-grammars ()
+    "Install Tree-sitter grammars if they are absent."
+    (interactive)
+    (dolist (grammar
+             '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.25.0"))
+               (bash "https://github.com/tree-sitter/tree-sitter-bash")
+               (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.23.2"))
+               (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.25.0" "src"))
+               (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.24.8"))
+               (python . ("https://github.com/tree-sitter/tree-sitter-python" "v0.25.0"))
+               (go "https://github.com/tree-sitter/tree-sitter-go" "v0.25.0")
+               (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+               (make "https://github.com/alemuller/tree-sitter-make")
+               (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+               (cmake "https://github.com/uyha/tree-sitter-cmake")
+               (c "https://github.com/tree-sitter/tree-sitter-c")
+               (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+               (toml "https://github.com/tree-sitter/tree-sitter-toml")
+               (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))
+               (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "typescript/src"))
+               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))
+               (prisma "https://github.com/victorhqc/tree-sitter-prisma")
+               (nix . ("https://github.com/nix-community/tree-sitter-nix" "v0.3.0"))
+               (zig "https://github.com/tree-sitter-grammars/tree-sitter-zig")))
+      (add-to-list 'treesit-language-source-alist grammar)
+      (unless (treesit-language-available-p (car grammar))
+        (treesit-install-language-grammar (car grammar)))))
+  
+  :config
+  (os/setup-install-grammars))
+
+(use-package copilot
+  :straight t
+  :defer t
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word))
+  :config
+  (add-to-list 'copilot-indentation-alist '(prog-mode 2))
+  (add-to-list 'copilot-indentation-alist '(org-mode 2))
+  (add-to-list 'copilot-indentation-alist '(text-mode 2))
+  (add-to-list 'copilot-indentation-alist '(closure-mode 2))
+  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2)))
+
+(use-package gptel
+  :straight t
+  :defer t
+  :config
+  ;; Default GPTel model and backend
+  (setq gptel-model 'claude-sonnet-4
+        gptel-backend (gptel-make-gh-copilot "Copilot"))
+
+  ;; Expert mode
+  (setq gptel-expert-commands t)
+  ;; Autoscroll when AI is typing
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+
+  ;; Register backends
+  (gptel-make-gemini "Gemini" :stream t :key gptel-api-key)
+  (gptel-make-anthropic "Claude" :stream t :key gptel-api-key)
+  (gptel-make-openai "OpenRouter"
+    :host "openrouter.ai"
+    :endpoint "/api/v1/chat/completions"
+    :stream t
+    :key gptel-api-key
+    :models '(
+              google/gemini-2.5-pro
+              google/gemini-2.5-flash
+              anthropic/claude-sonnet-4.5)))
+
+(use-package gptel-magit
+  :straight t
+  :defer t
+  :hook (magit-mode . gptel-magit-install))
+
+(use-package vterm
+  :straight t
+  :defer t)
+
+(use-package vterm-toggle
+  :straight t
+  :defer t
+  :after (vterm)
+  :config
+  (setq vterm-toggle-fullscreen-p nil)
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                   (let ((buffer (get-buffer buffer-or-name)))
+                     (with-current-buffer buffer
+                       (or (equal major-mode 'vterm-mode)
+                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
+                 (display-buffer-reuse-window display-buffer-at-bottom)
+                 (reusable-frames . visible)
+                 (window-height . 0.3))))
+
+(use-package helm
+  :straight t
+  :defer t
+  :bind (:map helm-map
+              ("C-w" . backward-kill-word))
+  :config
+  (setq helm-completion-style 'emacs))
+
+(use-package helm-icons
+  :straight '(helm-icons :type git :host github :repo "yyoncho/helm-icons")
+  :defer t
+  :config
+  (setq helm-icons-provider 'all-the-icons)
+  :init
+  (helm-icons-enable))
+
+(use-package helm-lsp
+  :straight t
+  :defer t
+  :after (helm lsp-mode)
+  :init
+  (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
+
+(use-package helm-xref
+  :straight t
+  :defer t
+  :after helm)
+
+(use-package magit
+  :straight t
+  ;; :defer t -- Do not defer
+)
+
+(use-package forge
+  :straight t
+  :after magit)
+
+(use-package magit-todos
+  :straight t
+  ;; :defer t -- Do not defer
+  :after magit
+  :config (magit-todos-mode +1))
+
+(setq auth-sources '("~/.authinfo.gpg"))
+
+(use-package lsp-mode
+  :straight t
+  :defer t
+  :diminish "LSP"
+  :hook ((lsp-mode . lsp-diagnostics-mode)
+         (lsp-mode . lsp-enable-which-key-integration)
+         ((tsx-ts-mode
+           typescript-ts-mode
+           js-ts-mode
+           go-ts-mode
+           zig-ts-mode
+           python-ts-mode) . lsp-deferred))
+  :custom
+  (lsp-keymap-prefix "C-c l")
+  (lsp-completion-provider :none)
+  (lsp-diagnostics-provider :flycheck)
+  (lsp-session-file (locate-user-emacs-file ".lsp-session"))
+  (lsp-log-io nil)                      ; IMPORTANT! Use only for debugging! Drastically affects performance
+  (lsp-keep-workspace-alive nil)        ; Close LSP server if all project buffers are closed
+  (lsp-idle-delay 0.5)                  ; Debounce timer for `after-change-function'
+  ;; core
+  (lsp-enable-xref t)                   ; Use xref to find references
+  (lsp-auto-configure t)                ; Used to decide between current active servers
+  (lsp-eldoc-enable-hover t)            ; Display signature information in the echo area
+  (lsp-enable-dap-auto-configure t)     ; Debug support
+  (lsp-enable-file-watchers nil)
+  (lsp-enable-folding nil)              ; I disable folding since I use origami
+  (lsp-enable-imenu t)
+  (lsp-enable-indentation nil)          ; I use prettier
+  (lsp-enable-links nil)                ; No need since we have `browse-url'
+  (lsp-enable-on-type-formatting nil)   ; Prettier handles this
+  (lsp-enable-suggest-server-download t) ; Useful prompt to download LSP providers
+  (lsp-enable-symbol-highlighting t)     ; Shows usages of symbol at point in the current buffer
+  (lsp-enable-text-document-color nil)   ; This is Treesitter's job
+
+  (lsp-ui-sideline-show-hover nil)      ; Sideline used only for diagnostics
+  (lsp-ui-sideline-diagnostic-max-lines 20) ; 20 lines since typescript errors can be quite big
+  ;; completion
+  (lsp-completion-enable t)
+  (lsp-completion-enable-additional-text-edit t) ; Ex: auto-insert an import for a completion candidate
+  (lsp-enable-snippet t)                         ; Important to provide full JSX completion
+  (lsp-completion-show-kind t)                   ; Optional
+  ;; headerline
+  (lsp-headerline-breadcrumb-enable nil)  ; Optional, I don't like the breadcrumbs
+  (lsp-headerline-breadcrumb-enable-diagnostics nil) ; Don't make them red, too noisy
+  (lsp-headerline-breadcrumb-enable-symbol-numbers nil)
+  (lsp-headerline-breadcrumb-icons-enable nil)
+  ;; modeline
+  (lsp-modeline-code-actions-enable nil) ; Modeline should be relatively clean
+  (lsp-modeline-diagnostics-enable nil)  ; Already supported through `flycheck'
+  (lsp-modeline-workspace-status-enable nil) ; Modeline displays "LSP" when lsp-mode is enabled
+  (lsp-signature-doc-lines 1)                ; Don't raise the echo area. It's distracting
+  (lsp-ui-doc-use-childframe t)              ; Show docs for symbol at point
+  (lsp-eldoc-render-all nil)            ; This would be very useful if it would respect `lsp-signature-doc-lines', currently it's distracting
+  ;; lens
+  (lsp-lens-enable nil)                 ; Optional, I don't need it
+  ;; semantic
+  (lsp-semantic-tokens-enable nil)      ; Related to highlighting, and we defer to treesitter
+  :init
+  (setq lsp-use-plists t))
+
+(use-package lsp-ui
+  :straight t
+  :defer t
+  :commands
+  (lsp-ui-doc-show
+   lsp-ui-doc-glance)
+  :hook (lsp-mode . lsp-ui-mode)
+  :after (lsp-mode evil)
+  :config (setq lsp-ui-doc-enable t
+                evil-lookup-func #'lsp-ui-doc-glance ; Makes K in evil-mode toggle the doc for symbol at point
+                lsp-ui-doc-show-with-cursor nil      ; Don't show doc when cursor is over symbol - too distracting
+                lsp-ui-doc-include-signature t       ; Show signature
+                lsp-ui-doc-position 'at-point))
+
+(use-package hl-todo
+  :straight t
+  ;; :defer t -- Do not defer
+  :after magit
+  :config
+  (add-hook 'magit-log-wash-summary-hook
+            #'hl-todo-search-and-highlight t)
+  (add-hook 'magit-revision-wash-message-hook
+            #'hl-todo-search-and-highlight t))
+
+(use-package flycheck
+  :straight t
+  :defer t
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+  :bind (:map flycheck-mode-map
+              ("M-n" . flycheck-next-error) ; optional but recommended error navigation
+              ("M-p" . flycheck-previous-error)))
+
+(use-package which-key
+  :straight t
+  :defer t
+  :config
+  (setq which-key-idle-delay 0.3
+        which-key-sort-order 'which-key-key-order-alpha)
+  (which-key-setup-side-window-bottom)
+  :init
+  (which-key-mode))
+
+(use-package doom-modeline
+  :straight t
+  :defer t
+  :init
+  (doom-modeline-mode 1)
+  :config
+  (setq doom-modeline-position-column-line-format '("L%l:%c"))
+  (column-number-mode t))
+
+(use-package ace-window
+  :straight t
+  :defer t
+  :init
+  (global-set-key (kbd "M-o") 'ace-window))
+
+(use-package yasnippet
+  :straight t
+  :defer t
+  :config
+  (yas-reload-all)
+  (yas-global-mode)
+
+  ;; Disable ancient React snippets
+  (add-hook 'rjsx-mode-hook
+            (lambda ()
+              (yas-minor-mode -1))))
+
+(use-package yasnippet-snippets
+  :straight t
+  :defer t
+  :after yasnippet
+  :config
+  (yasnippet-snippets-initialize))
+
+(use-package auto-yasnippet
+  :straight t
+  :defer t
+  :after yasnippet)
+
+;;;; Code Completion
+(use-package corfu
+  :straight t
+  :defer t
+  ;; Optional customizations
+  :custom
+  (corfu-cycle t)                 ; Allows cycling through candidates
+  (corfu-auto t)                  ; Enable auto completion
+  (corfu-auto-prefix 2)           ; Minimum length of prefix for completion
+  (corfu-auto-delay 0)            ; No delay for completion
+  (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that number of seconds
+  (corfu-preview-current 'insert) ; insert previewed candidate
+  ;; (corfu-preselect 'first)     ; Enable to pre-select the first option
+  (corfu-preselect 'prompt)
+  (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
+  :bind (:map corfu-map
+              ("M-SPC"      . corfu-insert-separator)
+              ("TAB"        . corfu-next)
+              ([tab]        . corfu-next)
+              ("S-TAB"      . corfu-previous)
+              ([backtab]    . corfu-previous)
+              ("S-<return>" . corfu-insert)
+              ("RET"        . corfu-insert))
+
+  :init
+  (global-corfu-mode)
+  (corfu-history-mode)
+  (corfu-popupinfo-mode))
+
+(use-package undo-fu-session
+  :straight t
+  :config
+  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+  :init
+  (undo-fu-session-global-mode))
+
+(use-package vundo
+  :straight t
+  :defer t
+  :config
+  (setq vundo-glyph-alist vundo-unicode-symbols))
+
+(use-package prettier-js
+  :straight t
+  :defer t
+  :config
+  (setq prettier-js-command "prettierd")
+  :hook ((typescript-ts-mode . prettier-js-mode)
+         (js-ts-mode         . prettier-js-mode)
+         (web-mode           . prettier-js-mode)
+         (tsx-ts-mode        . prettier-js-mode)))
+
+(use-package git-gutter
+  :straight t
+  :hook (prog-mode . git-gutter-mode)
+  :config
+  (setq git-gutter:update-interval 0.02))
+
+(use-package git-gutter-fringe
+  :straight t
+  :config
+  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
+
+(use-package marginalia
+  :straight t
+  :defer t
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :init
+  (marginalia-mode))
+
+(use-package dtrt-indent
+  :straight t
+  :defer t
+  :init
+  (dtrt-indent-global-mode +1))
+
+(use-package go-mode
+  :straight t
+  :defer t
+  :init
+  (add-hook 'go-mode-hook #'lsp-deferred)
+  (defun lsp-go-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t))
+  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+  (add-hook 'go-mode-hook
+            (lambda ()
+              (defalias 'godef-jump #'lsp-find-definition)
+              (defalias 'godef-describe #'lsp-ui-doc-glance))))
+
+(use-package activities
+  :straight t
+  :defer t
+  :init
+  (activities-mode))
+
+(use-package orderless
+  :straight t
+  :defer t
+  :init
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides
+        '((file (styles basic partial-completion))))
+
+  ;; Enable fuzzy / flex matching
+  (setq orderless-matching-styles
+        '(orderless-literal
+          orderless-regexp
+          orderless-flex)))
+
+(use-package docker
+  :straight t
+  :defer t)
+
+(use-package git-timemachine
+  :straight t)
+
+;; @see https://emacs.stackexchange.com/questions/9842/disable-evil-mode-when-git-timemachine-mode-is-activated
+(eval-after-load 'git-timemachine
+  '(progn
+     (evil-make-overriding-map git-timemachine-mode-map 'normal)
+     (add-hook 'git-timemachine-mode-hook #'evil-normalize-keymaps)))
+
+(use-package markdown-toc
+  :straight t
+  :defer t)
+
+;; @see https://github.com/doomemacs/doomemacs/blob/51154d1d50c9d3a375e4454e959f0687612fbd60/modules/lang/markdown/config.el#L18
+(use-package markdown-mode
+  :straight t
+  :defer t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init
+  (setq markdown-italic-underscore t
+        markdown-gfm-additional-languages '("sh")
+        markdown-make-gfm-checkboxes-buttons t
+        markdown-fontify-whole-heading-line t
+        markdown-fontify-code-blocks-natively t
+
+        ;; `+markdown-compile' offers support for many transpilers (see
+        ;; `+markdown-compile-functions'), which it tries until one succeeds.
+        markdown-command #'+markdown-compile
+        ;; This is set to `nil' by default, which causes a wrong-type-arg error
+        ;; when you use `markdown-open'. These are more sensible defaults.
+        markdown-open-command
+        (cond ((featurep :system 'macos) "open")
+              ((featurep :system 'linux) "xdg-open"))
+
+        ;; A sensible and simple default preamble for markdown exports that
+        ;; takes after the github asthetic (plus highlightjs syntax coloring).
+        markdown-content-type "application/xhtml+xml"
+        markdown-css-paths
+        '("https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css"
+          "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github.min.css")
+        markdown-xhtml-header-content
+        (concat "<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>"
+                "<style> body { box-sizing: border-box; max-width: 740px; width: 100%; margin: 40px auto; padding: 0 10px; } </style>"
+                "<script id='MathJax-script' async src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'></script>"
+                "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js'></script>"
+                "<script>document.addEventListener('DOMContentLoaded', () => { document.body.classList.add('markdown-body'); document.querySelectorAll('pre[lang] > code').forEach((code) => { code.classList.add(code.parentElement.lang); }); document.querySelectorAll('pre > code').forEach((code) => { hljs.highlightBlock(code); }); });</script>")
+        ;; Disabled to prevent accidentally clicking links while focusing Emacs
+        ;; or a markdown buffer. We prefer keyboard-centric workflows anyway and
+        ;; already have ffap or lookup commands for opening links at point (e.g.
+        ;; gf or pressing RET on a link).
+        markdown-mouse-follow-link nil))
+
+(use-package protobuf-mode
+  :straight t
+  :defer t)
+
+;; @see https://github.com/svaante/dape
+(use-package dape
+  :straight t
+  :defer t
+  :preface
+  (setq dape-key-prefix nil)
+  :custom
+  (dape-breakpoint-global-mode +1)
+  (dape-buffer-window-arrangement 'right)
+  (dape-cwd-function #'projectile-project-root))
+
+(use-package repeat
+  :straight nil
+  :custom
+  (repeat-mode +1))
+
+(use-package emacs
+  :straight nil
+  :custom
+  (window-sides-vertical t))
+
+(use-package vertico
+  :straight t
+  :defer t
+  :custom
+  (vertico-count 20)
+  (vertico-cycle t)
+  :init
+  (vertico-mode))
+
+(use-package emacs
+  :straight nil
+  :custom
+  (context-menu-mode t)
+  (enable-recursive-minibuffers t)
+  (read-extended-command-predicate #'command-completion-default-include-p)
+  (minibuffer-prompt-properties
+   '(read-only t cursor-intangible t face minibuffer-prompt)))
+
+(use-package org-roam
+  :straight t
+  ;; :defer t -- Do not defer
+  :after org
+  :init
+  (setq org-roam-directory "~/repos/org/roam/")
+  :config
+  (org-roam-db-autosync-mode))
+
+(use-package restart-emacs
+  :straight t)
+
+(use-package grip-mode
+  :straight t
+  :defer t
+  :config
+  (setq grip-command 'auto))
+
+(straight-use-package '(org-cv :host gitlab
+                               :repo "Titan-C/org-cv"
+                               :branch "master"))
+
+(with-eval-after-load 'org
+  (require 'ox-moderncv)
+
+  (setq org-latex-compiler "lualatex")
+  (setq org-preview-latex-default-process 'dvisvgm))
+
+(use-package pdf-tools
+  :straight t
+  :defer t
+  :init
+  (pdf-loader-install))
+
+(use-package eldoc-box
+  :straight t
+  :hook
+  (prog-mode . eldoc-box-hover-at-point-mode)
+  :init
+  (require 'eldoc-box)
+  :config
+  (setq eldoc-box-only-multi-line t)
+  (add-hook 'eldoc-box-buffer-setup-hook #'eldoc-box-prettify-ts-errors 0 t)
+  (set-face-attribute 'eldoc-box-border nil :background (face-attribute 'mode-line-inactive :background)))
+
+(use-package fancy-compilation
+  :straight t
+  :commands (fancy-compilation-mode)
+  :init
+  (fancy-compilation-mode))
+
+(use-package rainbow-delimiters
+  :straight t
+  :defer t
+  :hook
+  (prog-mode . rainbow-delimiters-mode)
+  :config
+  (set-face-attribute 'rainbow-delimiters-mismatched-face nil :foreground "orange")
+  (set-face-attribute 'rainbow-delimiters-unmatched-face  nil :foreground "#f0008b"))
+
+(use-package rainbow-mode
+  :straight t
+  :defer t
+  :hook
+  (prog-mode . rainbow-mode))
 
 (use-package casual
   :straight t
@@ -199,6 +1007,19 @@
       (evil-define-key '(normal emacs) reb-mode-map (kbd "C-o") #'casual-re-builder-tmenu)
       (evil-define-key '(normal emacs) reb-lisp-mode-map (kbd "C-o") #'casual-re-builder-tmenu))))
 
+(use-package literate-calc-mode
+  :straight t
+  :defer t)
+
+(use-package zoom
+  :straight t
+  :defer t
+  :init
+  (custom-set-variables
+   '(zoom-mode t)
+   '(zoom-size '(0.618 . 0.618))
+   '(zoom-ignored-major-modes '(vterm-mode))))
+
 (use-package circe
   :straight t
   :defer t
@@ -217,6 +1038,42 @@
   (setq circe-use-cycle-completion t)
   (setq circe-reduce-lurker-spam t))
 
+(use-package swiper-helm
+  :straight t
+  :defer t)
+
+(use-package zig-mode
+  :straight t
+  :defer t
+  :mode (("\\.zig\\'" . zig-ts-mode)
+         ("\\.zon\\'" . zig-ts-mode))
+  :after (treesit zig-ts-mode)
+  :config
+  (setq lsp-zig-zls-executable (executable-find "zls"))
+  (setq lsp-zig-zig-exe-path (executable-find "zig")))
+
+(use-package zig-ts-mode
+  :straight t
+  :defer t
+  :mode (("\\.zig\\'" . zig-ts-mode)
+         ("\\.zon\\'" . zig-ts-mode)))
+
+(use-package ox-typst
+  :straight t
+  :after org
+  :config
+  (setq org-typst-from-latex-environment #'org-typst-from-latex-with-naive
+      org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
+
+(use-package xterm-color
+  :straight t
+  :defer t
+  :config
+  (setq compilation-environment '("TERM=xterm-256color"))
+  :init
+  (define-advice compilation-filter (:around (f proc string) xterm-color)
+    (funcall f proc (xterm-color-filter string))))
+
 (use-package vimish-fold
   :straight t
   :defer t
@@ -232,313 +1089,22 @@
   :config
   (global-evil-vimish-fold-mode))
 
-(use-package compile-angel
+(use-package pyvenv
   :straight t
-  :demand t
+  :defer t
+  :mode ("\\.py\\'" . pyvenv-mode)
+  :after lsp-mode
   :config
-  (setq compile-angel-verbose t)
-  ;; The following directive prevents compile-angel from compiling your init
-  ;; files. If you choose to remove this push to `compile-angel-excluded-files'
-  ;; and compile your pre/post-init files, ensure you understand the
-  ;; implications and thoroughly test your code. For example, if you're using
-  ;; the `use-package' macro, you'll need to explicitly add:
-  ;; (eval-when-compile (require 'use-package))
-  ;; at the top of your init file.
-  (push "/init.el" compile-angel-excluded-files)
-  (push "/early-init.el" compile-angel-excluded-files)
-  (push "/post-init.el" compile-angel-excluded-files)
-  (push "/lisp/+theme.el" compile-angel-excluded-files)
-  (push "/lisp/+keybindings.el" compile-angel-excluded-files)
+  (setq pyvenv-mode-line-indicator
+        '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] "))))
 
-  ;; A global mode that compiles .el files before they are loaded
-  ;; using `load' or `require'.
-  (compile-angel-on-load-mode 1))
-
-(use-package copilot
+(use-package lsp-pyright
   :straight t
   :defer t
-  :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
-              ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word))
-  :config
-  (add-to-list 'copilot-indentation-alist '(prog-mode 2))
-  (add-to-list 'copilot-indentation-alist '(org-mode 2))
-  (add-to-list 'copilot-indentation-alist '(text-mode 2))
-  (add-to-list 'copilot-indentation-alist '(closure-mode 2))
-  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2)))
-
-;;;; Code Completion
-(use-package corfu
-  :straight t
-  :defer t
-  ;; Optional customizations
-  :custom
-  (corfu-cycle t)                 ; Allows cycling through candidates
-  (corfu-auto t)                  ; Enable auto completion
-  (corfu-auto-prefix 2)           ; Minimum length of prefix for completion
-  (corfu-auto-delay 0)            ; No delay for completion
-  (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that number of seconds
-  (corfu-preview-current 'insert) ; insert previewed candidate
-  ;; (corfu-preselect 'first)     ; Enable to pre-select the first option
-  (corfu-preselect 'prompt)
-  (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
-  :bind (:map corfu-map
-              ("M-SPC"      . corfu-insert-separator)
-              ("TAB"        . corfu-next)
-              ([tab]        . corfu-next)
-              ("S-TAB"      . corfu-previous)
-              ([backtab]    . corfu-previous)
-              ("S-<return>" . corfu-insert)
-              ("RET"        . corfu-insert))
-
-  :init
-  (global-corfu-mode)
-  (corfu-history-mode)
-  (corfu-popupinfo-mode))
-
-;; @see https://github.com/svaante/dape
-(use-package dape
-  :straight t
-  :defer t
-  :preface
-  (setq dape-key-prefix nil)
-  :custom
-  (dape-breakpoint-global-mode +1)
-  (dape-buffer-window-arrangement 'right)
-  (dape-cwd-function #'projectile-project-root))
-
-(use-package repeat
-  :straight nil
-  :custom
-  (repeat-mode +1))
-
-(use-package emacs
-  :straight nil
-  :custom
-  (window-sides-vertical t))
-
-(use-package deadgrep
-  :straight t
-  :defer t
-  :after evil)
-
-(use-package devdocs
-  :straight t
-  :defer t
-  :demand t)
-
-(defun +my/devdocs-choose ()
-  (interactive)
-  (devdocs-lookup t))
-
-(use-package dired-gitignore
-  :straight t
-  :defer t
-  :after dired
-  :hook (dired-mode . #'dired-gitignore-global-mode))
-
-(use-package dirvish
-  :straight t
-  :defer t
-  :init
-  (dirvish-override-dired-mode)
-  :config
-  (setq dirvish-attributes '(vc-state subtree-state all-the-icons collapse file-size))
-  (setq dirvish-mode-line-format '(:left (sort symlink) :right (omit yank index))))
-
-(use-package docker
-  :straight t
-  :defer t)
-
-(setq-default fill-column 120
-              delete-trailing-lines t)
-
-;; Use auto-fill in these modes at 120
-(dolist (hook '(text-mode-hook
-                markdown-mode-hook
-                org-mode-hook
-                prog-mode-hook))
-  (add-hook hook #'auto-fill-mode))
-
-;; Git commit uses 72 char limit
-(add-hook 'git-commit-mode-hook
-          (lambda ()
-            (setq fill-column 72)
-            (auto-fill-mode 1)))
-
-;; Persist entries
-(server-mode +1)
-(save-place-mode +1)
-(savehist-mode +1)
-(recentf-mode +1)
-
-;; Smart parenthesis
-(electric-pair-mode 1)
-
-;; Required for self-signed cert (for IRC)
-(setq gnutls-verify-error nil)
-
-;; Smooth scrolling
-(pixel-scroll-precision-mode +1)
-
-;; Keep compilation window at the bottom
-(setq split-height-threshold nil)
-(setq split-width-threshold most-positive-fixnum)
-
-;; Hide Warnings and Compile-Log windows (untested)
-(add-to-list 'display-buffer-alist
-             `(,(rx bos "*" (or "Warnings" "Compile-Log") "*" eos)
-               (display-buffer-no-window)
-               (allow-no-window . t)))
-
-;; Enable code-folding in code buffers
-(add-hook 'prog-mode-hook (lambda ()
-                            (hs-minor-mode +1)))
-
-(use-package eldoc-box
-  :straight t
-  :hook
-  (prog-mode . eldoc-box-hover-at-point-mode)
-  :init
-  (require 'eldoc-box)
-  :config
-  (setq eldoc-box-only-multi-line t)
-  (add-hook 'eldoc-box-buffer-setup-hook #'eldoc-box-prettify-ts-errors 0 t)
-  (set-face-attribute 'eldoc-box-border nil :background (face-attribute 'mode-line-inactive :background)))
-
-(use-package envrc
-  :straight t
-  :defer t
-  :hook (after-init . envrc-global-mode))
-
-(use-package evil
-  :straight t
-  :init
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump t)
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-undo-system 'undo-redo)
-  :config
-  (evil-mode 1))
-
-(use-package evil-collection
-  :straight t
-  :after evil
-  :init
-  (setq evil-collection-want-find-usages-bindings t)
-  (setq evil-collection-calendar-want-org-bindings t)
-  :config
-  (evil-collection-init))
-
-(use-package evil-mc
-  :straight t
-  :init
-  (require 'evil-mc)
-  (global-evil-mc-mode 1))
-
-(use-package evil-org
-  :straight t
-  :after (evil org)
-  :hook (org-mode . (lambda () evil-org-mode))
-  :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
-
-(use-package evil-surround
-  :straight t
-  :after evil
-  :config
-  (global-evil-surround-mode 1))
-
-(use-package evil-numbers
-  :straight t
-  :defer t
-  :after evil)
-
-(use-package fancy-compilation
-  :straight t
-  :commands (fancy-compilation-mode)
-  :init
-  (fancy-compilation-mode))
-
-(use-package flycheck
-  :straight t
-  :defer t
-  :config
-  (add-hook 'after-init-hook #'global-flycheck-mode)
-  :bind (:map flycheck-mode-map
-              ("M-n" . flycheck-next-error) ; optional but recommended error navigation
-              ("M-p" . flycheck-previous-error)))
-
-(use-package git-gutter
-  :straight t
-  :hook (prog-mode . git-gutter-mode)
-  :config
-  (setq git-gutter:update-interval 0.02))
-
-(use-package git-gutter-fringe
-  :straight t
-  :config
-  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
-
-(use-package git-timemachine
-  :straight t)
-
-;; @see https://emacs.stackexchange.com/questions/9842/disable-evil-mode-when-git-timemachine-mode-is-activated
-(eval-after-load 'git-timemachine
-  '(progn
-     (evil-make-overriding-map git-timemachine-mode-map 'normal)
-     (add-hook 'git-timemachine-mode-hook #'evil-normalize-keymaps)))
-
-(use-package go-mode
-  :straight t
-  :defer t
-  :init
-  (add-hook 'go-mode-hook #'lsp-deferred)
-  (defun lsp-go-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-format-buffer t t)
-    (add-hook 'before-save-hook #'lsp-organize-imports t t))
-  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
-  (add-hook 'go-mode-hook
-            (lambda ()
-              (defalias 'godef-jump #'lsp-find-definition)
-              (defalias 'godef-describe #'lsp-ui-doc-glance))))
-
-(use-package gptel
-  :straight t
-  :defer t
-  :config
-  ;; Default GPTel model and backend
-  (setq gptel-model 'claude-sonnet-4
-        gptel-backend (gptel-make-gh-copilot "Copilot"))
-
-  ;; Expert mode
-  (setq gptel-expert-commands t)
-  ;; Autoscroll when AI is typing
-  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
-
-  ;; Register backends
-  (gptel-make-gemini "Gemini" :stream t :key gptel-api-key)
-  (gptel-make-anthropic "Claude" :stream t :key gptel-api-key)
-  (gptel-make-openai "OpenRouter"
-    :host "openrouter.ai"
-    :endpoint "/api/v1/chat/completions"
-    :stream t
-    :key gptel-api-key
-    :models '(
-              google/gemini-2.5-pro
-              google/gemini-2.5-flash
-              anthropic/claude-sonnet-4.5)))
-
-(use-package gptel-magit
-  :straight t
-  :defer t
-  :hook (magit-mode . gptel-magit-install))
+  :custom (lsp-pyright-langserver-command "basedpyright")
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp-deferred))))
 
 ;; (use-package lsp-ltex-plus
 ;;   :straight (lsp-ltex-plus :type git
@@ -561,591 +1127,3 @@
 ;;   (setq lsp-ltex-plus--combined-dictionary
 ;;         (lsp-ltex-plus-combine-plists lsp-ltex-plus-dictionary
 ;;                                       lsp-ltex-plus--stored-dictionary)))
-
-(use-package grip-mode
-  :straight t
-  :defer t
-  :config
-  (setq grip-command 'auto))
-
-(use-package helm
-  :straight t
-  :defer t
-  :bind (:map helm-map
-              ("C-w" . backward-kill-word))
-  :config
-  (setq helm-completion-style 'emacs))
-
-(use-package helm-icons
-  :straight '(helm-icons :type git :host github :repo "yyoncho/helm-icons")
-  :defer t
-  :config
-  (setq helm-icons-provider 'all-the-icons)
-  :init
-  (helm-icons-enable))
-
-(use-package helm-lsp
-  :straight t
-  :defer t
-  :after (helm lsp-mode)
-  :init
-  (define-key lsp-mode-map [remap xref-find-apropos] #'helm-lsp-workspace-symbol))
-
-(use-package helm-xref
-  :straight t
-  :defer t
-  :after helm)
-
-(use-package hl-todo
-  :straight t
-  ;; :defer t -- Do not defer
-  :after magit
-  :config
-  (add-hook 'magit-log-wash-summary-hook
-            #'hl-todo-search-and-highlight t)
-  (add-hook 'magit-revision-wash-message-hook
-            #'hl-todo-search-and-highlight t))
-
-(use-package all-the-icons
-  :straight t
-  :defer t
-  :if (display-graphic-p))
-
-(use-package all-the-icons-dired
-  :straight t
-  ;; :defer t -- Do not defer
-)
-
-(use-package dtrt-indent
-  :straight t
-  :defer t
-  :init
-  (dtrt-indent-global-mode +1))
-
-(use-package literate-calc-mode
-  :straight t
-  :defer t)
-
-(use-package lsp-mode
-  :straight t
-  :defer t
-  :diminish "LSP"
-  :hook ((lsp-mode . lsp-diagnostics-mode)
-         (lsp-mode . lsp-enable-which-key-integration)
-         ((tsx-ts-mode
-           typescript-ts-mode
-           js-ts-mode
-           go-ts-mode
-           zig-ts-mode
-           python-ts-mode) . lsp-deferred))
-  :custom
-  (lsp-keymap-prefix "C-c l")
-  (lsp-completion-provider :none)
-  (lsp-diagnostics-provider :flycheck)
-  (lsp-session-file (locate-user-emacs-file ".lsp-session"))
-  (lsp-log-io nil)                      ; IMPORTANT! Use only for debugging! Drastically affects performance
-  (lsp-keep-workspace-alive nil)        ; Close LSP server if all project buffers are closed
-  (lsp-idle-delay 0.5)                  ; Debounce timer for `after-change-function'
-  ;; core
-  (lsp-enable-xref t)                   ; Use xref to find references
-  (lsp-auto-configure t)                ; Used to decide between current active servers
-  (lsp-eldoc-enable-hover t)            ; Display signature information in the echo area
-  (lsp-enable-dap-auto-configure t)     ; Debug support
-  (lsp-enable-file-watchers nil)
-  (lsp-enable-folding nil)              ; I disable folding since I use origami
-  (lsp-enable-imenu t)
-  (lsp-enable-indentation nil)          ; I use prettier
-  (lsp-enable-links nil)                ; No need since we have `browse-url'
-  (lsp-enable-on-type-formatting nil)   ; Prettier handles this
-  (lsp-enable-suggest-server-download t) ; Useful prompt to download LSP providers
-  (lsp-enable-symbol-highlighting t)     ; Shows usages of symbol at point in the current buffer
-  (lsp-enable-text-document-color nil)   ; This is Treesitter's job
-
-  (lsp-ui-sideline-show-hover nil)      ; Sideline used only for diagnostics
-  (lsp-ui-sideline-diagnostic-max-lines 20) ; 20 lines since typescript errors can be quite big
-  ;; completion
-  (lsp-completion-enable t)
-  (lsp-completion-enable-additional-text-edit t) ; Ex: auto-insert an import for a completion candidate
-  (lsp-enable-snippet t)                         ; Important to provide full JSX completion
-  (lsp-completion-show-kind t)                   ; Optional
-  ;; headerline
-  (lsp-headerline-breadcrumb-enable nil)  ; Optional, I don't like the breadcrumbs
-  (lsp-headerline-breadcrumb-enable-diagnostics nil) ; Don't make them red, too noisy
-  (lsp-headerline-breadcrumb-enable-symbol-numbers nil)
-  (lsp-headerline-breadcrumb-icons-enable nil)
-  ;; modeline
-  (lsp-modeline-code-actions-enable nil) ; Modeline should be relatively clean
-  (lsp-modeline-diagnostics-enable nil)  ; Already supported through `flycheck'
-  (lsp-modeline-workspace-status-enable nil) ; Modeline displays "LSP" when lsp-mode is enabled
-  (lsp-signature-doc-lines 1)                ; Don't raise the echo area. It's distracting
-  (lsp-ui-doc-use-childframe t)              ; Show docs for symbol at point
-  (lsp-eldoc-render-all nil)            ; This would be very useful if it would respect `lsp-signature-doc-lines', currently it's distracting
-  ;; lens
-  (lsp-lens-enable nil)                 ; Optional, I don't need it
-  ;; semantic
-  (lsp-semantic-tokens-enable nil)      ; Related to highlighting, and we defer to treesitter
-  :init
-  (setq lsp-use-plists t))
-
-(use-package lsp-ui
-  :straight t
-  :defer t
-  :commands
-  (lsp-ui-doc-show
-   lsp-ui-doc-glance)
-  :hook (lsp-mode . lsp-ui-mode)
-  :after (lsp-mode evil)
-  :config (setq lsp-ui-doc-enable t
-                evil-lookup-func #'lsp-ui-doc-glance ; Makes K in evil-mode toggle the doc for symbol at point
-                lsp-ui-doc-show-with-cursor nil      ; Don't show doc when cursor is over symbol - too distracting
-                lsp-ui-doc-include-signature t       ; Show signature
-                lsp-ui-doc-position 'at-point))
-
-(use-package magit
-  :straight t
-  ;; :defer t -- Do not defer
-)
-
-(use-package forge
-  :straight t
-  :after magit)
-
-(use-package magit-todos
-  :straight t
-  ;; :defer t -- Do not defer
-  :after magit
-  :config (magit-todos-mode +1))
-
-(setq auth-sources '("~/.authinfo.gpg"))
-
-(use-package marginalia
-  :straight t
-  :defer t
-  :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
-  :init
-  (marginalia-mode))
-
-(use-package markdown-toc
-  :straight t
-  :defer t)
-
-;; @see https://github.com/doomemacs/doomemacs/blob/51154d1d50c9d3a375e4454e959f0687612fbd60/modules/lang/markdown/config.el#L18
-(use-package markdown-mode
-  :straight t
-  :defer t
-  :mode ("README\\.md\\'" . gfm-mode)
-  :init
-  (setq markdown-italic-underscore t
-        markdown-gfm-additional-languages '("sh")
-        markdown-make-gfm-checkboxes-buttons t
-        markdown-fontify-whole-heading-line t
-        markdown-fontify-code-blocks-natively t
-
-        ;; `+markdown-compile' offers support for many transpilers (see
-        ;; `+markdown-compile-functions'), which it tries until one succeeds.
-        markdown-command #'+markdown-compile
-        ;; This is set to `nil' by default, which causes a wrong-type-arg error
-        ;; when you use `markdown-open'. These are more sensible defaults.
-        markdown-open-command
-        (cond ((featurep :system 'macos) "open")
-              ((featurep :system 'linux) "xdg-open"))
-
-        ;; A sensible and simple default preamble for markdown exports that
-        ;; takes after the github asthetic (plus highlightjs syntax coloring).
-        markdown-content-type "application/xhtml+xml"
-        markdown-css-paths
-        '("https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css"
-          "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github.min.css")
-        markdown-xhtml-header-content
-        (concat "<meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>"
-                "<style> body { box-sizing: border-box; max-width: 740px; width: 100%; margin: 40px auto; padding: 0 10px; } </style>"
-                "<script id='MathJax-script' async src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'></script>"
-                "<script src='https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js'></script>"
-                "<script>document.addEventListener('DOMContentLoaded', () => { document.body.classList.add('markdown-body'); document.querySelectorAll('pre[lang] > code').forEach((code) => { code.classList.add(code.parentElement.lang); }); document.querySelectorAll('pre > code').forEach((code) => { hljs.highlightBlock(code); }); });</script>")
-        ;; Disabled to prevent accidentally clicking links while focusing Emacs
-        ;; or a markdown buffer. We prefer keyboard-centric workflows anyway and
-        ;; already have ffap or lookup commands for opening links at point (e.g.
-        ;; gf or pressing RET on a link).
-        markdown-mouse-follow-link nil))
-
-(use-package doom-modeline
-  :straight t
-  :defer t
-  :after nerd-icons
-  :init
-  (doom-modeline-mode 1)
-  :config
-  (setq doom-modeline-position-column-line-format '("L%l:%c"))
-  (column-number-mode t))
-
-(use-package orderless
-  :straight t
-  :defer t
-  :init
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides
-        '((file (styles basic partial-completion))))
-
-  ;; Enable fuzzy / flex matching
-  (setq orderless-matching-styles
-        '(orderless-literal
-          orderless-regexp
-          orderless-flex)))
-
-(straight-use-package '(org-cv :host gitlab
-                               :repo "Titan-C/org-cv"
-                               :branch "master"))
-
-(with-eval-after-load 'org
-  (require 'ox-moderncv)
-
-  (setq org-latex-compiler "lualatex")
-  (setq org-preview-latex-default-process 'dvisvgm))
-
-(use-package org
-  :straight (:type built-in)
-  :commands (org-mode org-agenda)
-  :mode ("\\.org\\'" . org-mode)
-  :config
-  (setq org-directory "~/repos/org")
-  (setq org-agenda-files '("~/repos/org/todo.org"))
-  :custom
-  (org-startup-folded t)
-  (org-startup-indented t)
-  (org-pretty-entities t)
-  (org-hide-emphasis-markers t)
-  (org-startup-with-inline-images t)
-  (org-image-actual-width '(300))
-  (org-ellipsis " ▾")
-  (org-agenda-start-with-log-mode t)
-  (org-log-done 'time)
-  (org-log-into-drawer t))
-
-(use-package org-bullets
-  :straight t
-  :defer t
-  :after org
-  :init
-  (require 'org-bullets)
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-
-(use-package org-archive
-  :straight (:type built-in)
-  :defer t
-  :after org
-  :config
-  (setq org-archive-location "archive.org::datetree/"))
-
-(use-package org-modern
-  :straight t
-  :after '(org)
-  :hook (org-mode . org-modern-mode)
-  :hook (org-agenda-finalize . org-modern-agenda)
-  :config
-  ;; Minimal UI
-  (package-initialize)
-  (menu-bar-mode -1)
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1)
-  (modus-themes-load-operandi)
-
-  ;; Choose some fonts
-  ;; (set-face-attribute 'default nil :family "Iosevka")
-  ;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
-  ;; (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
-
-  ;; Add frame borders and window dividers
-  (modify-all-frames-parameters
-   '((right-divider-width . 40)
-     (internal-border-width . 40)))
-  (dolist (face '(window-divider
-                  window-divider-first-pixel
-                  window-divider-last-pixel))
-    (face-spec-reset-face face)
-    (set-face-foreground face (face-attribute 'default :background)))
-  (set-face-background 'fringe (face-attribute 'default :background))
-
-  (setq
-   ;; Edit settings
-   org-auto-align-tags nil
-   org-tags-column 0
-   org-catch-invisible-edits 'show-and-error
-   org-special-ctrl-a/e t
-   org-insert-heading-respect-content t
-
-   ;; Org styling, hide markup etc.
-   org-hide-emphasis-markers t
-   org-pretty-entities t
-   org-agenda-tags-column 0
-   org-ellipsis "…")
-
-  (global-org-modern-mode))
-
-(use-package org-roam
-  :straight t
-  ;; :defer t -- Do not defer
-  :after org
-  :init
-  (setq org-roam-directory "~/repos/org/roam/")
-  :config
-  (org-roam-db-autosync-mode))
-
-(use-package ox-typst
-  :straight t
-  :after org
-  :config
-  (setq org-typst-from-latex-environment #'org-typst-from-latex-with-naive
-      org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
-
-(use-package pdf-tools
-  :straight t
-  :defer t
-  :init
-  (pdf-loader-install))
-
-(use-package prettier-js
-  :straight t
-  :defer t
-  :config
-  (setq prettier-js-command "prettierd")
-  :hook ((typescript-ts-mode . prettier-js-mode)
-         (js-ts-mode         . prettier-js-mode)
-         (web-mode           . prettier-js-mode)
-         (tsx-ts-mode        . prettier-js-mode)))
-
-(use-package protobuf-mode
-  :straight t
-  :defer t)
-
-(use-package lsp-pyright
-  :straight t
-  :defer t
-  :custom (lsp-pyright-langserver-command "basedpyright")
-  :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp-deferred))))
-
-(use-package pyvenv
-  :straight t
-  :defer t
-  :mode ("\\.py\\'" . pyvenv-mode)
-  :after lsp-mode
-  :config
-  (setq pyvenv-mode-line-indicator
-        '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] "))))
-
-(use-package rainbow-delimiters
-  :straight t
-  :defer t
-  :hook
-  (prog-mode . rainbow-delimiters-mode)
-  :config
-  (set-face-attribute 'rainbow-delimiters-mismatched-face nil :foreground "orange")
-  (set-face-attribute 'rainbow-delimiters-unmatched-face  nil :foreground "#f0008b"))
-
-(use-package rainbow-mode
-  :straight t
-  :defer t
-  :hook
-  (prog-mode . rainbow-mode))
-
-(use-package restart-emacs
-  :straight t)
-
-(use-package swiper-helm
-  :straight t
-  :defer t)
-
-(use-package vterm
-  :straight t
-  :defer t)
-
-(use-package vterm-toggle
-  :straight t
-  :defer t
-  :after (vterm)
-  :config
-  (setq vterm-toggle-fullscreen-p nil)
-  (add-to-list 'display-buffer-alist
-               '((lambda (buffer-or-name _)
-                   (let ((buffer (get-buffer buffer-or-name)))
-                     (with-current-buffer buffer
-                       (or (equal major-mode 'vterm-mode)
-                           (string-prefix-p vterm-buffer-name (buffer-name buffer))))))
-                 (display-buffer-reuse-window display-buffer-at-bottom)
-                 (reusable-frames . visible)
-                 (window-height . 0.3))))
-
-(use-package nix-ts-mode
-  :straight t
-  :mode "\\.nix\\'")
-
-(use-package treesit
-  :straight (:type built-in)
-  :init
-  (dolist (mapping
-           '((python-mode . python-ts-mode)
-             (css-mode . css-ts-mode)
-             (typescript-mode . typescript-ts-mode)
-             (js-mode . typescript-ts-mode)
-             (js2-mode . typescript-ts-mode)
-             (c-mode . c-ts-mode)
-             (c++-mode . c++-ts-mode)
-             (c-or-c++-mode . c-or-c++-ts-mode)
-             (bash-mode . bash-ts-mode)
-             (json-mode . json-ts-mode)
-             (js-json-mode . json-ts-mode)
-             (sh-mode . bash-ts-mode)
-             (sh-base-mode . bash-ts-mode)
-             (nix-mode . nix-ts-mode)
-             (yaml-mode . yaml-ts-mode)
-             (zig-mode . zig-ts-mode)))
-    (add-to-list 'major-mode-remap-alist mapping))
-  
-  :mode (("\\.tsx\\'" . tsx-ts-mode)
-         ("\\.ts\\'"  . typescript-ts-mode)
-         ("\\.js\\'"  . typescript-ts-mode)
-         ("\\.mjs\\'" . typescript-ts-mode)
-         ("\\.mts\\'" . typescript-ts-mode)
-         ("\\.cjs\\'" . typescript-ts-mode)
-         ("\\.jsx\\'" . tsx-ts-mode)
-         ("\\.json\\'" .  json-ts-mode)
-         ("\\.Dockerfile\\'" . dockerfile-ts-mode)
-         ("\\.prisma\\'" . prisma-ts-mode)
-         ("\\.go\\'" . go-ts-mode)
-         ("\\.yaml\\'" . yaml-ts-mode)
-         ("\\.yml\\'" . yaml-ts-mode)
-         ("\\.py\\'" . python-ts-mode))
-  
-  :preface
-  (defun os/setup-install-grammars ()
-    "Install Tree-sitter grammars if they are absent."
-    (interactive)
-    (dolist (grammar
-             '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.25.0"))
-               (bash "https://github.com/tree-sitter/tree-sitter-bash")
-               (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.23.2"))
-               (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.25.0" "src"))
-               (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.24.8"))
-               (python . ("https://github.com/tree-sitter/tree-sitter-python" "v0.25.0"))
-               (go "https://github.com/tree-sitter/tree-sitter-go" "v0.25.0")
-               (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-               (make "https://github.com/alemuller/tree-sitter-make")
-               (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-               (cmake "https://github.com/uyha/tree-sitter-cmake")
-               (c "https://github.com/tree-sitter/tree-sitter-c")
-               (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
-               (toml "https://github.com/tree-sitter/tree-sitter-toml")
-               (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))
-               (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "typescript/src"))
-               (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))
-               (prisma "https://github.com/victorhqc/tree-sitter-prisma")
-               (nix . ("https://github.com/nix-community/tree-sitter-nix" "v0.3.0"))
-               (zig "https://github.com/tree-sitter-grammars/tree-sitter-zig")))
-      (add-to-list 'treesit-language-source-alist grammar)
-      (unless (treesit-language-available-p (car grammar))
-        (treesit-install-language-grammar (car grammar)))))
-  
-  :config
-  (os/setup-install-grammars))
-
-(use-package vertico
-  :straight t
-  :defer t
-  :custom
-  (vertico-count 20)
-  (vertico-cycle t)
-  :init
-  (vertico-mode))
-
-(use-package emacs
-  :straight nil
-  :custom
-  (context-menu-mode t)
-  (enable-recursive-minibuffers t)
-  (read-extended-command-predicate #'command-completion-default-include-p)
-  (minibuffer-prompt-properties
-   '(read-only t cursor-intangible t face minibuffer-prompt)))
-
-(use-package undo-fu-session
-  :straight t
-  :config
-  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
-  :init
-  (undo-fu-session-global-mode))
-
-(use-package vundo
-  :straight t
-  :defer t
-  :config
-  (setq vundo-glyph-alist vundo-unicode-symbols))
-
-(use-package which-key
-  :straight t
-  :defer t
-  :config
-  (setq which-key-idle-delay 0.3
-        which-key-sort-order 'which-key-key-order-alpha)
-  (which-key-setup-side-window-bottom)
-  :init
-  (which-key-mode))
-
-(use-package xterm-color
-  :straight t
-  :defer t
-  :config
-  (setq compilation-environment '("TERM=xterm-256color"))
-  :init
-  (define-advice compilation-filter (:around (f proc string) xterm-color)
-    (funcall f proc (xterm-color-filter string))))
-
-(use-package yasnippet
-  :straight t
-  :defer t
-  :config
-  (yas-reload-all)
-  (yas-global-mode)
-
-  ;; Disable ancient React snippets
-  (add-hook 'rjsx-mode-hook
-            (lambda ()
-              (yas-minor-mode -1))))
-
-(use-package yasnippet-snippets
-  :straight t
-  :defer t
-  :after yasnippet
-  :config
-  (yasnippet-snippets-initialize))
-
-(use-package auto-yasnippet
-  :straight t
-  :defer t
-  :after yasnippet)
-
-(use-package zig-mode
-  :straight t
-  :defer t
-  :mode (("\\.zig\\'" . zig-ts-mode)
-         ("\\.zon\\'" . zig-ts-mode))
-  :after (treesit zig-ts-mode)
-  :config
-  (setq lsp-zig-zls-executable (executable-find "zls"))
-  (setq lsp-zig-zig-exe-path (executable-find "zig")))
-
-(use-package zig-ts-mode
-  :straight t
-  :defer t
-  :mode (("\\.zig\\'" . zig-ts-mode)
-         ("\\.zon\\'" . zig-ts-mode)))
-
-(use-package zoom
-  :straight t
-  :defer t
-  :init
-  (custom-set-variables
-   '(zoom-mode t)
-   '(zoom-size '(0.618 . 0.618))
-   '(zoom-ignored-major-modes '(vterm-mode))))

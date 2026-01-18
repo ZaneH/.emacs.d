@@ -629,7 +629,9 @@
   ;; Inc/Dec numbers
   (general-define-key
    "M-=" 'evil-numbers/inc-at-pt
-   "M--" 'evil-numbers/dec-at-pt))
+   "M--" 'evil-numbers/dec-at-pt
+   "M-+" 'evil-numbers/inc-at-pt-incremental
+   "M-_" 'evil-numbers/dec-at-pt-incremental))
 
 (provide '+keybindings)
 ;;; +keybindings.el ends here

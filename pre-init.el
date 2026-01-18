@@ -1,4 +1,5 @@
-;; Straight bootstrap
+(setq straight-package--warning-displayed t)
+
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
