@@ -1,3 +1,9 @@
+(use-package esup
+  :straight t
+  :pin melpa
+  :config
+  (setq esup-depth 0))
+
 (setq-default fill-column 120
               delete-trailing-lines t)
 
@@ -234,17 +240,18 @@
 
   (global-org-modern-mode))
 
+(setq evil-want-integration t)
 (use-package evil
   :straight t
   :init
   (setq evil-want-C-u-scroll t)
   (setq evil-want-C-i-jump t)
-  (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
   (setq evil-undo-system 'undo-redo)
   :config
   (evil-mode 1))
 
+(setq evil-want-integration t)
 (use-package evil-collection
   :straight t
   :after evil

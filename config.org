@@ -2,6 +2,15 @@
 #+PROPERTY: header-args:emacs-lisp :tangle yes
 #+PROPERTY: header-args:emacs-lisp :tangle ./lisp/+config.el
 
+* +esup
+
+#+begin_src emacs-lisp
+  (use-package esup
+    :straight t
+    :pin melpa
+    :config
+    (setq esup-depth 0))
+#+end_src
 * +editor
 
 #+begin_src emacs-lisp
@@ -276,17 +285,18 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
 * +evil
 
 #+begin_src emacs-lisp
+  (setq evil-want-integration t)
   (use-package evil
     :straight t
     :init
     (setq evil-want-C-u-scroll t)
     (setq evil-want-C-i-jump t)
-    (setq evil-want-integration t)
     (setq evil-want-keybinding nil)
     (setq evil-undo-system 'undo-redo)
     :config
     (evil-mode 1))
 
+  (setq evil-want-integration t)
   (use-package evil-collection
     :straight t
     :after evil

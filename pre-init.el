@@ -1,5 +1,3 @@
-(setq straight-package--warning-displayed t)
-
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
@@ -15,3 +13,5 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
+
+(setq straight-package--warning-displayed t)
