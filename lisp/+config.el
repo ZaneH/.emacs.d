@@ -1,20 +1,14 @@
-;;; +ace-window.el --- Ace Window -*- lexical-binding: t; -*-
-
 (use-package ace-window
   :straight t
   :defer t
   :init
   (global-set-key (kbd "M-o") 'ace-window))
 
-;;; +activities.el --- Activities -*- lexical-binding: t; -*-
-
 (use-package activities
   :straight t
   :defer t
   :init
   (activities-mode))
-
-;;; +agenda.el --- Agenda -*- lexical-binding: t; -*-
 
 ;; Inspired by: https://www.youtube.com/watch?v=a_WNtuefREM
 
@@ -107,8 +101,6 @@
    '(org-agenda-date-weekend ((t (:inherit outline-2 :height 1.15))))
    '(org-agenda-date-weekend-today ((t (:inherit outline-4 :height 1.15))))
    '(org-super-agenda-header ((t (:inherit custom-button :weight bold :height 1.05))))))
-
-;;; +casual.el --- Casual (Keybind Help) -*- lexical-binding: t; -*-
 
 (use-package casual
   :straight t
@@ -207,8 +199,6 @@
       (evil-define-key '(normal emacs) reb-mode-map (kbd "C-o") #'casual-re-builder-tmenu)
       (evil-define-key '(normal emacs) reb-lisp-mode-map (kbd "C-o") #'casual-re-builder-tmenu))))
 
-;;; +circe.el --- Circe (IRC) -*- lexical-binding: t; -*-
-
 (use-package circe
   :straight t
   :defer t
@@ -227,8 +217,6 @@
   (setq circe-use-cycle-completion t)
   (setq circe-reduce-lurker-spam t))
 
-;;; +code-folding.el --- Code Folding -*- lexical-binding: t; -*-
-
 (use-package vimish-fold
   :straight t
   :defer t
@@ -243,8 +231,6 @@
   (setq evil-vimish-fold-target-modes '(prog-mode conf-mode text-mode))
   :config
   (global-evil-vimish-fold-mode))
-
-;;; +compile-angel.el --- Compile Angel: Improve Load Times -*- lexical-binding: t; -*-
 
 (use-package compile-angel
   :straight t
@@ -268,8 +254,6 @@
   ;; using `load' or `require'.
   (compile-angel-on-load-mode 1))
 
-;;; +copilot.el --- Copilot -*- lexical-binding: t; -*-
-
 (use-package copilot
   :straight t
   :defer t
@@ -284,8 +268,6 @@
   (add-to-list 'copilot-indentation-alist '(text-mode 2))
   (add-to-list 'copilot-indentation-alist '(closure-mode 2))
   (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2)))
-
-;;; +corfu.el --- Corfu -*- lexical-binding: t; -*-
 
 ;;;; Code Completion
 (use-package corfu
@@ -316,8 +298,6 @@
   (corfu-history-mode)
   (corfu-popupinfo-mode))
 
-;;; +dape.el --- Dape (Debug Adapter Protocol for Emacs) -*- lexical-binding: t; -*-
-
 ;; @see https://github.com/svaante/dape
 (use-package dape
   :straight t
@@ -339,14 +319,10 @@
   :custom
   (window-sides-vertical t))
 
-;;; +deadgrep.el --- Deadgrep -*- lexical-binding: t; -*-
-
 (use-package deadgrep
   :straight t
   :defer t
   :after evil)
-
-;;; +devdocs.el --- Devdocs -*- lexical-binding: t; -*-
 
 (use-package devdocs
   :straight t
@@ -357,15 +333,11 @@
   (interactive)
   (devdocs-lookup t))
 
-;;; +dired.el --- Dired -*- lexical-binding: t; -*-
-
 (use-package dired-gitignore
   :straight t
   :defer t
   :after dired
   :hook (dired-mode . #'dired-gitignore-global-mode))
-
-;;; +dirvish.el --- Dirvish -*- lexical-binding: t; -*-
 
 (use-package dirvish
   :straight t
@@ -376,13 +348,9 @@
   (setq dirvish-attributes '(vc-state subtree-state all-the-icons collapse file-size))
   (setq dirvish-mode-line-format '(:left (sort symlink) :right (omit yank index))))
 
-;;; +docker.el --- Docker -*- lexical-binding: t; -*-
-
 (use-package docker
   :straight t
   :defer t)
-
-;;; +editor.el --- Editor Config -*- lexical-binding: t; -*-
 
 (setq-default fill-column 120
               delete-trailing-lines t)
@@ -429,8 +397,6 @@
 (add-hook 'prog-mode-hook (lambda ()
                             (hs-minor-mode +1)))
 
-;;; +eldoc-box.el --- Eldoc Box -*- lexical-binding: t; -*-
-
 (use-package eldoc-box
   :straight t
   :hook
@@ -442,14 +408,10 @@
   (add-hook 'eldoc-box-buffer-setup-hook #'eldoc-box-prettify-ts-errors 0 t)
   (set-face-attribute 'eldoc-box-border nil :background (face-attribute 'mode-line-inactive :background)))
 
-;;; +envrc.el --- envrc -*- lexical-binding: t; -*-
-
 (use-package envrc
   :straight t
   :defer t
   :hook (after-init . envrc-global-mode))
-
-;;; +evil.el --- Evil -*- lexical-binding: t; -*-
 
 (use-package evil
   :straight t
@@ -496,15 +458,11 @@
   :defer t
   :after evil)
 
-;;; +fancy-compilation.el --- Fancy Compilation -*- lexical-binding: t; -*-
-
 (use-package fancy-compilation
   :straight t
   :commands (fancy-compilation-mode)
   :init
   (fancy-compilation-mode))
-
-;;; +flycheck.el --- Flycheck Syntax Checker -*- lexical-binding: t; -*-
 
 (use-package flycheck
   :straight t
@@ -514,8 +472,6 @@
   :bind (:map flycheck-mode-map
               ("M-n" . flycheck-next-error) ; optional but recommended error navigation
               ("M-p" . flycheck-previous-error)))
-
-;;; +git-gutter.el --- Git gutter -*- lexical-binding: t; -*-
 
 (use-package git-gutter
   :straight t
@@ -530,8 +486,6 @@
   (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
   (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 
-;;; +git-timemachine.el --- Git Time Machine -*- lexical-binding: t; -*-
-
 (use-package git-timemachine
   :straight t)
 
@@ -540,8 +494,6 @@
   '(progn
      (evil-make-overriding-map git-timemachine-mode-map 'normal)
      (add-hook 'git-timemachine-mode-hook #'evil-normalize-keymaps)))
-
-;;; +go.el --- Go -*- lexical-binding: t; -*-
 
 (use-package go-mode
   :straight t
@@ -556,8 +508,6 @@
             (lambda ()
               (defalias 'godef-jump #'lsp-find-definition)
               (defalias 'godef-describe #'lsp-ui-doc-glance))))
-
-;;; +gptel.el --- GPTel -*- lexical-binding: t; -*-
 
 (use-package gptel
   :straight t
@@ -590,8 +540,6 @@
   :defer t
   :hook (magit-mode . gptel-magit-install))
 
-;;; +grammar.el --- Grammar -*- lexical-binding: t; -*-
-
 ;; (use-package lsp-ltex-plus
 ;;   :straight (lsp-ltex-plus :type git
 ;;                            :host github
@@ -614,15 +562,11 @@
 ;;         (lsp-ltex-plus-combine-plists lsp-ltex-plus-dictionary
 ;;                                       lsp-ltex-plus--stored-dictionary)))
 
-;;; +grip-mode.el --- Grip -*- lexical-binding: t; -*-
-
 (use-package grip-mode
   :straight t
   :defer t
   :config
   (setq grip-command 'auto))
-
-;;; +helm.el --- Helm -*- lexical-binding: t; -*-
 
 (use-package helm
   :straight t
@@ -652,8 +596,6 @@
   :defer t
   :after helm)
 
-;;; +hl-todo.el --- Highlight Todo -*- lexical-binding: t; -*-
-
 (use-package hl-todo
   :straight t
   ;; :defer t -- Do not defer
@@ -663,8 +605,6 @@
             #'hl-todo-search-and-highlight t)
   (add-hook 'magit-revision-wash-message-hook
             #'hl-todo-search-and-highlight t))
-
-;;; +icons.el --- All the Icons -*- lexical-binding: t; -*-
 
 (use-package all-the-icons
   :straight t
@@ -676,21 +616,15 @@
   ;; :defer t -- Do not defer
 )
 
-;;; +indent.el --- Indention -*- lexical-binding: t; -*-
-
 (use-package dtrt-indent
   :straight t
   :defer t
   :init
   (dtrt-indent-global-mode +1))
 
-;;; +literate-calc.el --- Literate Calc -*- lexical-binding: t; -*-
-
 (use-package literate-calc-mode
   :straight t
   :defer t)
-
-;;; +lsp.el --- Language Server Protocol -*- lexical-binding: t; -*-
 
 (use-package lsp-mode
   :straight t
@@ -753,8 +687,6 @@
   :init
   (setq lsp-use-plists t))
 
-;;; +lsp-ui.el --- LSP UI -*- lexical-binding: t; -*-
-
 (use-package lsp-ui
   :straight t
   :defer t
@@ -768,8 +700,6 @@
                 lsp-ui-doc-show-with-cursor nil      ; Don't show doc when cursor is over symbol - too distracting
                 lsp-ui-doc-include-signature t       ; Show signature
                 lsp-ui-doc-position 'at-point))
-
-;;; +magit.el --- Magit -*- lexical-binding: t; -*-
 
 (use-package magit
   :straight t
@@ -788,8 +718,6 @@
 
 (setq auth-sources '("~/.authinfo.gpg"))
 
-;;; +marginalia.el --- Marginalia -*- lexical-binding: t; -*-
-
 (use-package marginalia
   :straight t
   :defer t
@@ -797,8 +725,6 @@
          ("M-A" . marginalia-cycle))
   :init
   (marginalia-mode))
-
-;;; +markdown.el --- Markdown -*- lexical-binding: t; -*-
 
 (use-package markdown-toc
   :straight t
@@ -843,8 +769,6 @@
         ;; gf or pressing RET on a link).
         markdown-mouse-follow-link nil))
 
-;;; +modeline.el --- Modeline -*- lexical-binding: t; -*-
-
 (use-package doom-modeline
   :straight t
   :defer t
@@ -854,8 +778,6 @@
   :config
   (setq doom-modeline-position-column-line-format '("L%l:%c"))
   (column-number-mode t))
-
-;;; +orderless.el --- Orderless Completion -*- lexical-binding: t; -*-
 
 (use-package orderless
   :straight t
@@ -872,8 +794,6 @@
           orderless-regexp
           orderless-flex)))
 
-;;; +org-cv.el --- Org CV -*- lexical-binding: t; -*-
-
 (straight-use-package '(org-cv :host gitlab
                                :repo "Titan-C/org-cv"
                                :branch "master"))
@@ -883,8 +803,6 @@
 
   (setq org-latex-compiler "lualatex")
   (setq org-preview-latex-default-process 'dvisvgm))
-
-;;; +org.el --- Org -*- lexical-binding: t; -*-
 
 (use-package org
   :straight (:type built-in)
@@ -919,8 +837,6 @@
   :after org
   :config
   (setq org-archive-location "archive.org::datetree/"))
-
-;;; +org-modern.el --- Org Modern -*- lexical-binding: t; -*-
 
 (use-package org-modern
   :straight t
@@ -967,8 +883,6 @@
 
   (global-org-modern-mode))
 
-;;; +org-roam.el --- Org Roam -*- lexical-binding: t; -*-
-
 (use-package org-roam
   :straight t
   ;; :defer t -- Do not defer
@@ -978,8 +892,6 @@
   :config
   (org-roam-db-autosync-mode))
 
-;;; +ox-typst.el --- Typst Org Exporter -*- lexical-binding: t; -*-
-
 (use-package ox-typst
   :straight t
   :after org
@@ -987,15 +899,11 @@
   (setq org-typst-from-latex-environment #'org-typst-from-latex-with-naive
       org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
 
-;;; +pdf-tools.el --- PDF Tools -*- lexical-binding: t; -*-
-
 (use-package pdf-tools
   :straight t
   :defer t
   :init
   (pdf-loader-install))
-
-;;; +prettier.el --- Prettier -*- lexical-binding: t; -*-
 
 (use-package prettier-js
   :straight t
@@ -1005,16 +913,11 @@
   :hook ((typescript-ts-mode . prettier-js-mode)
          (js-ts-mode         . prettier-js-mode)
          (web-mode           . prettier-js-mode)
-         (tsx-ts-mode        . prettier-js-mode)
-         ))
-
-;;; +protobuf.el --- Protobuf -*- lexical-binding: t; -*-
+         (tsx-ts-mode        . prettier-js-mode)))
 
 (use-package protobuf-mode
   :straight t
   :defer t)
-
-;;; +pyright.el --- basedpyright > pyright -*- lexical-binding: t; -*-
 
 (use-package lsp-pyright
   :straight t
@@ -1023,8 +926,6 @@
   :hook (python-mode . (lambda ()
                           (require 'lsp-pyright)
                           (lsp-deferred))))
-
-;;; +pyvenv.el --- Python Virtual Environment -*- lexical-binding: t; -*-
 
 (use-package pyvenv
   :straight t
@@ -1035,8 +936,6 @@
   (setq pyvenv-mode-line-indicator
         '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] "))))
 
-;;; +rainbow-delimiters.el --- Rainbow Delimiters -*- lexical-binding: t; -*-
-
 (use-package rainbow-delimiters
   :straight t
   :defer t
@@ -1046,26 +945,18 @@
   (set-face-attribute 'rainbow-delimiters-mismatched-face nil :foreground "orange")
   (set-face-attribute 'rainbow-delimiters-unmatched-face  nil :foreground "#f0008b"))
 
-;;; +rainbow-mode.el --- Color in Buffers -*- lexical-binding: t; -*-
-
 (use-package rainbow-mode
   :straight t
   :defer t
   :hook
   (prog-mode . rainbow-mode))
 
-;;; +restart.el --- Restart Emacs -*- lexical-binding: t; -*-
-
 (use-package restart-emacs
   :straight t)
-
-;;; +swiper.el --- Swiper -*- lexical-binding: t; -*-
 
 (use-package swiper-helm
   :straight t
   :defer t)
-
-;;; +term.el --- VTerm -*- lexical-binding: t; -*-
 
 (use-package vterm
   :straight t
@@ -1086,8 +977,6 @@
                  (display-buffer-reuse-window display-buffer-at-bottom)
                  (reusable-frames . visible)
                  (window-height . 0.3))))
-
-;;; +tree-sitter.el --- Parsing of languages -*- lexical-binding: t; -*-
 
 (use-package nix-ts-mode
   :straight t
@@ -1162,8 +1051,6 @@
   :config
   (os/setup-install-grammars))
 
-;;; +vertico.el --- Vertico (Minibuffer) -*- lexical-binding: t; -*-
-
 (use-package vertico
   :straight t
   :defer t
@@ -1182,8 +1069,6 @@
   (minibuffer-prompt-properties
    '(read-only t cursor-intangible t face minibuffer-prompt)))
 
-;;; +vundo.el --- Undo Tree -*- lexical-binding: t; -*-
-
 (use-package undo-fu-session
   :straight t
   :config
@@ -1197,8 +1082,6 @@
   :config
   (setq vundo-glyph-alist vundo-unicode-symbols))
 
-;;; +which-key.el --- Which Key -*- lexical-binding: t; -*-
-
 (use-package which-key
   :straight t
   :defer t
@@ -1209,8 +1092,6 @@
   :init
   (which-key-mode))
 
-;;; +xterm-color.el --- Xterm Color -*- lexical-binding: t; -*-
-
 (use-package xterm-color
   :straight t
   :defer t
@@ -1219,8 +1100,6 @@
   :init
   (define-advice compilation-filter (:around (f proc string) xterm-color)
     (funcall f proc (xterm-color-filter string))))
-
-;;; +yasnippet.el --- Yasnippet -*- lexical-binding: t; -*-
 
 (use-package yasnippet
   :straight t
@@ -1246,8 +1125,6 @@
   :defer t
   :after yasnippet)
 
-;;; +zig.el --- Zig -*- lexical-binding: t; -*-
-
 (use-package zig-mode
   :straight t
   :defer t
@@ -1263,8 +1140,6 @@
   :defer t
   :mode (("\\.zig\\'" . zig-ts-mode)
          ("\\.zon\\'" . zig-ts-mode)))
-
-;;; +zoom.el --- Zoom -*- lexical-binding: t; -*-
 
 (use-package zoom
   :straight t
