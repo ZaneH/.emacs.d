@@ -60,8 +60,3 @@
   (lsp-semantic-tokens-enable nil)      ; Related to highlighting, and we defer to treesitter
   :init
   (setq lsp-use-plists t))
-
-(use-package lsp-treemacs
-  :straight t
-  :defer t
-  :after lsp)

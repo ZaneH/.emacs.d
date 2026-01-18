@@ -16,15 +16,6 @@
   :init
   (helm-icons-enable))
 
-(use-package helm-rg
-  :straight t
-  :defer t
-  :after helm
-  :commands (helm-rg)
-  :config
-  (setq helm-rg-thing-at-point nil)
-  (setq helm-rg-default-directory 'git-root))
-
 (use-package helm-lsp
   :straight t
   :defer t

@@ -23,7 +23,7 @@
   :custom
   (doom-themes-enable-bold t)   ; if nil, bold is universally disabled
   (doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
+  ;; (doom-themes-treemacs-theme "doom-colors") ; use "doom-colors" for less minimal icon theme
   :config
   ;; (load-theme 'doom-tokyo-night :no-confirm)
   (load-theme 'doom-badger :no-confirm)
@@ -31,10 +31,10 @@
   ;; (load-theme 'doom-bluloco-dark :no-confirm)
 
   (doom-themes-visual-bell-config)
-  (doom-themes-treemacs-config)
+  ;; (doom-themes-treemacs-config)
   (doom-themes-org-config))
 
-;; This can cause UI glitches (e.g. flickering)
+;; This can cause UI glitches (e.g. flickering mode-line)
 ;; (use-package solaire-mode
 ;;   :straight t
 ;;   :config

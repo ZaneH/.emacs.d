@@ -132,7 +132,6 @@
     "cr"  '(lsp-rename :which-key "Rename")
     "ct"  '(lsp-find-type-definition :which-key "Type definition")
     "cx"  '(flycheck-list-errors :which-key "List errors")
-    "cX"  '(lsp-treemacs-errors-list :which-key "Errors list")
 
     ;;; <leader> d --- debugger
     "d"   '(:ignore t :which-key "debugger")
@@ -262,11 +261,8 @@
     "o"   '(:ignore t :which-key "open")
     "oaa" '(org-agenda :which-key "Agenda")
     "oat" '(org-todo-list :which-key "Todo list")
-    "op"  '(+my/treemacs-toggle :which-key "Project sidebar")
-    "oP"  '(treemacs-find-file :which-key "Find in sidebar")
     "ot"  '(vterm-toggle :which-key "Toggle terminal")
     "oT"  '(vterm :which-key "New terminal")
-    "o-"  '(dired-jump :which-key "Dired")
     "oD"  '(docker :which-key "Docker")
     "of"  '(make-frame :which-key "New frame")
 
@@ -276,6 +272,11 @@
     "ola" '(gptel-add :which-key "Add text to context")
     "olf" '(gptel-add-file :which-key "Add file to context")
     "ols" '(gptel-send :which-key "Send to gptel")
+
+    ;;; <leader> p --- project
+    "p"   '(:ignore t :which-key "project")
+    "pv"  '(dirvish-dwim :which-key "Open dirvish")
+    "pg"  '(deadgrep :which-key "Deadgrep")
     
     ;;; <leader> q --- quit/session
     "q"   '(:ignore t :which-key "quit/session")
@@ -302,7 +303,6 @@
     "tr"  '(read-only-mode :which-key "Read-only")
     "tv"  '(visible-mode :which-key "Visible mode")
     "tw"  '(visual-line-mode :which-key "Wrap lines")
-    "tt"  '(treemacs :which-key "Treemacs")
     "tu"  '(vundo :which-key "Undo tree")
     
     ;;; <leader> w --- window
@@ -615,6 +615,12 @@
      :states 'motion
      "C-SPC" 'org-agenda-show-and-scroll-up))
 
+  (with-eval-after-load 'dirvish
+    (general-def dirvish-mode-map
+      "TAB" #'dirvish-subtree-toggle
+      "q" #'dirvish-quit
+      "zg" #'dired-gitignore-global-mode))
+
   ;; Super agenda header navigation
   (general-def org-super-agenda-header-map
     "k" #'org-agenda-prevous-line
@@ -624,21 +630,6 @@
   (general-define-key
    "M-=" 'evil-numbers/inc-at-pt
    "M--" 'evil-numbers/dec-at-pt))
-
-(defun +my/treemacs-toggle ()
-  "Initialize or toggle treemacs.
-Shows only the current project, removing all others."
-  (interactive)
-  (require 'treemacs)
-  (pcase (treemacs-current-visibility)
-    ('visible
-     (delete-window (treemacs-get-local-window)))
-    (_
-     (let ((project (treemacs--find-current-user-project)))
-       (if (and project (not (file-equal-p project "~")))
-           (treemacs-add-and-display-current-project-exclusively)
-         (message "No valid project in current buffer; opening last treemacs session")
-         (treemacs))))))
 
 (provide '+keybindings)
 ;;; +keybindings.el ends here
