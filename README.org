@@ -1,6 +1,5 @@
 * .emacs.d config
 The config and all of its documentation exist at [[file:config.org]] as a literate config. It should auto-tangle on-save.
-Secrets go in =./lisp/secrets.el=, this file is ignored by git.
 
 ** Dependencies
 *npm*
