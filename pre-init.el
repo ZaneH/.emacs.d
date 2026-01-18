@@ -15,3 +15,6 @@
   (load bootstrap-file nil 'nomessage))
 
 (setq straight-package--warning-displayed t)
+
+;; Probably a security issue
+(setq package-check-signature nil)

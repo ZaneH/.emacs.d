@@ -17,12 +17,15 @@
   (push "/post-init.el" compile-angel-excluded-files)
   (push "/pre-early-init.el" compile-angel-excluded-files)
   (push "/pre-init.el" compile-angel-excluded-files)
-  (push "/lisp/+theme.el" compile-angel-excluded-files)
-  (push "/lisp/+keybindings.el" compile-angel-excluded-files)
 
   ;; A global mode that compiles .el files before they are loaded
   ;; using `load' or `require'.
   (compile-angel-on-load-mode 1))
+
+(eval-when-compile (require 'use-package))
+
+(add-to-list 'load-path minimal-emacs-user-directory)
+(load "secrets")
 
 ;; Catpuccin
 ;; (use-package catppuccin-theme)
@@ -64,21 +67,6 @@
 ;;   :config
 ;;   (require 'solaire-mode)
 ;;   (solaire-global-mode +1))
-
-;; ;; Probably a security issue
-(setq package-check-signature nil)
-
-;; (add-to-list 'load-path "~/.emacs.d/lisp")
-;; 
-;; (load "+compile-angel")
-;; 
-(eval-when-compile (require 'use-package))
-
-;; (load "+theme")
-;; (load "+keybindings")
-;; (load "+config")
-;; 
-;; (load "secrets")
 
 (setq-default fill-column 120
               delete-trailing-lines t)
