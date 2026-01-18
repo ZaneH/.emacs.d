@@ -1,8 +1,5 @@
 ;;; +keybindings.el -*- lexical-binding: t; -*-
 
-;; This file sets up Doom-style keybindings using general.el
-;; Based on Doom Emacs bindings but adapted for your setup
-
 ;;; General.el setup
 (use-package general
   :straight t
