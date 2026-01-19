@@ -69,6 +69,7 @@
   - [[#pyright][+pyright]]
   - [[#grammar][+grammar]]
   - [[#helpful][+helpful]]
+  - [[#drag-stuff][+drag-stuff]]
   - [[#tldr][+tldr]]
   - [[#keybindings][+keybindings]]
 
@@ -1581,6 +1582,17 @@ This is slow/buggy/not good right now.
     :defer t)
 #+end_src
     
+** +drag-stuff
+Enables you to move a line/region up or down.
+
+#+begin_src emacs-lisp
+  (use-package drag-stuff
+    :straight t
+    :config
+    (drag-stuff-global-mode +1)
+    (drag-stuff-define-keys))
+#+end_src
+
 ** +tldr
 
 #+begin_src emacs-lisp

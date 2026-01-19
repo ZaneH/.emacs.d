@@ -1209,6 +1209,12 @@
   :straight t
   :defer t)
 
+(use-package drag-stuff
+  :straight t
+  :config
+  (drag-stuff-global-mode +1)
+  (drag-stuff-define-keys))
+
 (use-package tldr
   :straight t
   :defer t)
