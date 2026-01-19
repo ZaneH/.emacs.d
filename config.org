@@ -2,6 +2,76 @@
 #+PROPERTY: header-args:emacs-lisp :tangle yes
 #+PROPERTY: header-args:emacs-lisp :tangle ./post-init.el
 
+* Table of Contents                                                :TOC_2_gh:
+- [[#no-byte-compile][No Byte Compile]]
+- [[#compile-angel][+compile-angel]]
+- [[#secrets][Secrets]]
+- [[#theme][Theme]]
+- [[#editor][+editor]]
+- [[#envrc][+envrc]]
+- [[#org][+org]]
+- [[#dired][+dired]]
+  - [[#useful-shorcuts][Useful shorcuts]]
+- [[#dirvish][+dirvish]]
+- [[#agenda][+agenda]]
+- [[#org-modern][+org-modern]]
+- [[#evil][+evil]]
+- [[#devdocs][+devdocs]]
+- [[#deadgrep][+deadgrep]]
+- [[#icons][+icons]]
+- [[#tree-sitter][+tree-sitter]]
+- [[#copilot][+copilot]]
+- [[#gptel][+gptel]]
+- [[#term][+term]]
+- [[#helm][+helm]]
+- [[#magit][+magit]]
+- [[#lsp][+lsp]]
+- [[#lsp-ui][+lsp-ui]]
+- [[#hl-todo][+hl-todo]]
+- [[#flycheck][+flycheck]]
+- [[#which-key][+which-key]]
+- [[#modeline][+modeline]]
+- [[#ace-window][+ace-window]]
+- [[#yasnippet][+yasnippet]]
+- [[#corfu][+corfu]]
+- [[#toc-org][+toc-org]]
+- [[#vundo][+vundo]]
+- [[#prettier][+prettier]]
+- [[#git-gutter][+git-gutter]]
+- [[#marginalia][+marginalia]]
+- [[#indent][+indent]]
+- [[#go][+go]]
+- [[#activities][+activities]]
+- [[#orderless][+orderless]]
+- [[#docker][+docker]]
+- [[#git-timemachine][+git-timemachine]]
+- [[#markdown][+markdown]]
+- [[#protobuf][+protobuf]]
+- [[#dape][+dape]]
+- [[#vertico][+vertico]]
+- [[#org-roam][+org-roam]]
+- [[#restart][+restart]]
+- [[#grip][+grip]]
+- [[#org-cv][+org-cv]]
+- [[#pdf-tools][+pdf-tools]]
+- [[#eldoc-box][+eldoc-box]]
+- [[#compilation-buffer][Compilation Buffer]]
+- [[#rainbow-delimiters][+rainbow-delimiters]]
+- [[#rainbow-mode][+rainbow-mode]]
+- [[#casual][+casual]]
+- [[#literate-calc][+literate-calc]]
+- [[#zoom][+zoom]]
+- [[#circe][+circe]]
+- [[#swiper][+swiper]]
+- [[#zig][+zig]]
+- [[#ox-typst][+ox-typst]]
+- [[#code-folding][+code-folding]]
+- [[#pyvenv][+pyvenv]]
+- [[#pyright][+pyright]]
+- [[#grammar][+grammar]]
+- [[#helpful][+helpful]]
+- [[#keybindings][Keybindings]]
+
 * No Byte Compile
 This =config.org= file gets tangled into =post-init.el=. Without =no-byte-compile: t;=, bad things happen.
 
@@ -164,6 +234,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     :config
     (setq org-directory "~/repos/org")
     (setq org-agenda-files '("~/repos/org/todo.org"))
+    (setq org-use-sub-superscripts nil)
     :custom
     (org-startup-folded t)
     (org-startup-indented t)
@@ -866,6 +937,17 @@ like VSCode. This solution shares a terminal buffer between every frame.
     (corfu-popupinfo-mode))
 #+end_src
 
+* +toc-org
+
+#+begin_src emacs-lisp
+  (use-package toc-org
+    :straight t
+    :defer t
+    :hook ((org-mode-hook . toc-org-mode)
+           (markdown-mode-hook . toc-org-mode))
+    :bind (:map markdown-mode-map
+                ("C-c C-o" . toc-org-markdown-follow-thing-at-point)))
+#+end_src
 * +vundo
 
 #+begin_src emacs-lisp

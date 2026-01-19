@@ -128,6 +128,7 @@
   :config
   (setq org-directory "~/repos/org")
   (setq org-agenda-files '("~/repos/org/todo.org"))
+  (setq org-use-sub-superscripts nil)
   :custom
   (org-startup-folded t)
   (org-startup-indented t)
@@ -722,6 +723,14 @@
   (global-corfu-mode)
   (corfu-history-mode)
   (corfu-popupinfo-mode))
+
+(use-package toc-org
+  :straight t
+  :defer t
+  :hook ((org-mode-hook . toc-org-mode)
+         (markdown-mode-hook . toc-org-mode))
+  :bind (:map markdown-mode-map
+              ("C-c C-o" . toc-org-markdown-follow-thing-at-point)))
 
 (use-package undo-fu-session
   :straight t
