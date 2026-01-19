@@ -1209,6 +1209,10 @@
   :straight t
   :defer t)
 
+(use-package tldr
+  :straight t
+  :defer t)
+
 (use-package general
   :straight t
   :demand t
@@ -1430,6 +1434,7 @@
     "hk"  '(helpful-key :which-key "Describe key")
     "hx"  '(helpful-command :which-key "Describe command")
     "hf"  '(helpful-function :which-key "Describe command")
+    "ht"  '(tldr :which-key "TLDR")
     
     ;;; <leader> i --- insert
     "i"   '(:ignore t :which-key "insert")

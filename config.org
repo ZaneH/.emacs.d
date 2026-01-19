@@ -69,6 +69,7 @@
   - [[#pyright][+pyright]]
   - [[#grammar][+grammar]]
   - [[#helpful][+helpful]]
+  - [[#tldr][+tldr]]
   - [[#keybindings][+keybindings]]
 
 ** +prelude
@@ -530,8 +531,8 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
 #+end_src
 
 ** +tree-sitter
-This configuration file is used to add language support to TS and to activate lsp-mode when appropriate. Check that the
-versions are up-to-date every so often.
+The treesit config is used to add language support to TS and to activate lsp-mode when appropriate. It _does not_ add LSP
+support for languages. Check that the grammar versions are up-to-date every so often.
 
 #+begin_src emacs-lisp
   (use-package nix-ts-mode
@@ -953,6 +954,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     :bind (:map markdown-mode-map
                 ("C-c C-o" . toc-org-markdown-follow-thing-at-point)))
 #+end_src
+
 ** +vundo
 
 #+begin_src emacs-lisp
@@ -1579,6 +1581,14 @@ This is slow/buggy/not good right now.
     :defer t)
 #+end_src
     
+** +tldr
+
+#+begin_src emacs-lisp
+  (use-package tldr
+    :straight t
+    :defer t)
+#+end_src
+
 ** +keybindings
 | Function     | Prefix |
 |--------------+--------|
@@ -1826,6 +1836,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "hk"  '(helpful-key :which-key "Describe key")
       "hx"  '(helpful-command :which-key "Describe command")
       "hf"  '(helpful-function :which-key "Describe command")
+      "ht"  '(tldr :which-key "TLDR")
       
       ;;; <leader> i --- insert
       "i"   '(:ignore t :which-key "insert")
