@@ -1843,26 +1843,28 @@ A few more useful keybinds to get started: =M-o= (switch window), =M-<up>= (incr
       "w>"  '(evil-window-increase-width :which-key "Increase width")
       "w<"  '(evil-window-decrease-width :which-key "Decrease width"))
 
-    ;;; Evil-mc keybindings (multiple cursors)
+    ;;; evil-mc keybindings (multiple cursors)
     (my/leader
       :prefix "gz"
       :states '(normal visual)
       "d" '(evil-mc-make-and-goto-next-match :which-key "Next match")
       "D" '(evil-mc-make-and-goto-prev-match :which-key "Prev match")
-      "s" '(evil-mc-skip-and-goto-next-match :which-key "Skip next")
-      "S" '(evil-mc-skip-and-goto-prev-match :which-key "Skip prev")
-      "c" '(evil-mc-skip-and-goto-next-cursor :which-key "Next cursor")
-      "C" '(evil-mc-skip-and-goto-prev-cursor :which-key "Prev cursor")
+      "a" '(evil-mc-make-all-cursors :which-key "All matches")
+
       "j" '(evil-mc-make-cursor-move-next-line :which-key "Cursor next line")
       "k" '(evil-mc-make-cursor-move-prev-line :which-key "Cursor prev line")
-      "m" '(evil-mc-make-all-cursors :which-key "All cursors")
-      "n" '(evil-mc-make-and-goto-next-cursor :which-key "Next cursor")
-      "N" '(evil-mc-make-and-goto-last-cursor :which-key "Last cursor")
-      "p" '(evil-mc-make-and-goto-prev-cursor :which-key "Prev cursor")
-      "P" '(evil-mc-make-and-goto-first-cursor :which-key "First cursor")
-      "q" '(evil-mc-undo-all-cursors :which-key "Undo all")
+      "v" '(evil-mc-make-cursor-in-visual-selection-beg :which-key "Cursors in visual block")
+
+      "n" '(evil-mc-skip-and-goto-next-cursor :which-key "Skip to next cursor")
+      "p" '(evil-mc-skip-and-goto-prev-cursor :which-key "Skip to prev cursor")
+
+      "s" '(evil-mc-skip-and-goto-next-match :which-key "Skip next match")
+      "S" '(evil-mc-skip-and-goto-prev-match :which-key "Skip prev match")
+
       "u" '(evil-mc-undo-last-added-cursor :which-key "Undo last")
-      "z" '(evil-mc-toggle-cursor-here :which-key "Toggle here"))
+      "q" '(evil-mc-undo-all-cursors :which-key "Quit all")
+      "." '(evil-mc-pause-cursors :which-key "Pause")
+      "," '(evil-mc-resume-cursors :which-key "Resume"))
 
     ;; Alternative multiple cursor bindings in visual mode
     (general-define-key
@@ -1950,6 +1952,7 @@ A few more useful keybinds to get started: =M-o= (switch window), =M-<up>= (incr
 
     (with-eval-after-load 'org
       ;; Global org-mode keybindings
+      ;; TODO: Implement most of these +org/functions
       (general-define-key
        :keymaps 'org-mode-map
        "C-c C-S-l" '+org/remove-link
