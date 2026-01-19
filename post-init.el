@@ -1225,6 +1225,7 @@
     :keymaps 'override
     :prefix "SPC m"
     :global-prefix "C-SPC m")
+  ;; , simulates SPC m
   (general-define-key
    :states '(normal visual)
    :keymaps 'override
@@ -1374,11 +1375,7 @@
     "fS"  '(write-file :which-key "Save as...")
     "fd"  '(dired :which-key "Open dired")
     "fD"  '(dired-jump :which-key "Dired jump")
-    ;; TODO: Add custom functions for these when needed:
-    ;; "fR"  '(doom/move-this-file :which-key "Rename/move file")
-    ;; "fC"  '(doom/copy-this-file :which-key "Copy file")
-    ;; "fy"  '(+default/yank-buffer-path :which-key "Yank file path")
-    
+
     ;;; <leader> g --- git/magit
     "g"   '(:ignore t :which-key "git")
     "gg"  '(magit-status :which-key "Magit status")
@@ -1646,17 +1643,10 @@
 
   (with-eval-after-load 'org
     ;; Global org-mode keybindings
-    ;; TODO: Implement most of these +org/functions
     (general-define-key
      :keymaps 'org-mode-map
-     "C-c C-S-l" '+org/remove-link
      "C-c C-i" 'org-toggle-inline-images
-     "S-RET" '+org/shift-return
-     "C-RET" '+org/insert-item-below
-     "C-S-RET" '+org/insert-item-above
      "C-M-RET" 'org-insert-subheading
-     [C-return] '+org/insert-item-below
-     [C-S-return] '+org/insert-item-above
      [C-M-return] 'org-insert-subheading
      [remap beginning-of-line] 'org-beginning-of-line
      [remap end-of-line] 'org-end-of-line)
@@ -1665,10 +1655,8 @@
     (when (eq system-type 'darwin)
       (general-define-key
        :keymaps 'org-mode-map
-       [s-return] '+org/insert-item-below
-       [s-S-return] '+org/insert-item-above
        [s-M-return] 'org-insert-subheading))
-    
+
     (my/local-leader
       :keymaps 'org-mode-map
       "#" '(org-update-statistics-cookies :which-key "Update statistics")
@@ -1696,7 +1684,6 @@
       "aa" '(org-attach :which-key "Attach")
       "ad" '(org-attach-delete-one :which-key "Delete one")
       "aD" '(org-attach-delete-all :which-key "Delete all")
-      "af" '(+org/find-file-in-attachments :which-key "Find file")
       "an" '(org-attach-new :which-key "New")
       "ao" '(org-attach-open :which-key "Open")
       "aO" '(org-attach-open-in-emacs :which-key "Open in Emacs")
@@ -1768,7 +1755,6 @@
       "ls" '(org-store-link :which-key "Store")
       "lS" '(org-insert-last-stored-link :which-key "Last stored")
       "lt" '(org-toggle-link-display :which-key "Toggle display")
-      "ly" '(+org/yank-link :which-key "Yank")
       
       "P" '(:ignore t :which-key "publish")
       "Pa" '(org-publish-all :which-key "All")
