@@ -485,6 +485,12 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     :straight t
     :defer t
     :after evil)
+
+  (use-package evil-commentary
+    :straight t
+    :defer t
+    :init
+    (evil-commentary-mode +1))
 #+end_src
 
 * +devdocs
@@ -1635,7 +1641,7 @@ A few more useful keybinds to get started: =M-o= (switch window), =M-<up>= (incr
      "C-S-f" 'toggle-frame-fullscreen
 
      ;; Comment
-     "gcc" 'comment-line)
+     "gc" 'evil-commentary)
 
     ;; Minibuffer navigation
     (general-define-key

@@ -355,6 +355,12 @@
   :defer t
   :after evil)
 
+(use-package evil-commentary
+  :straight t
+  :defer t
+  :init
+  (evil-commentary-mode +1))
+
 (use-package devdocs
   :straight t
   :defer t
@@ -1240,7 +1246,7 @@
    "C-S-f" 'toggle-frame-fullscreen
 
    ;; Comment
-   "gcc" 'comment-line)
+   "gc" 'evil-commentary)
 
   ;; Minibuffer navigation
   (general-define-key
