@@ -1,84 +1,84 @@
 #+PROPERTY: header-args:emacs-lisp :tangle yes
 #+PROPERTY: header-args:emacs-lisp :tangle ./post-init.el
 
-** Table of Contents                                              :TOC_2_gh:
-- [[#prelude][+prelude]]
-- [[#compile-angel][+compile-angel]]
-- [[#secrets][+secrets]]
-- [[#theme][+theme]]
-- [[#editor][+editor]]
-- [[#envrc][+envrc]]
-- [[#org][+org]]
-- [[#dired][+dired]]
-  - [[#useful-shorcuts][Useful shorcuts]]
-- [[#dirvish][+dirvish]]
-- [[#agenda][+agenda]]
-- [[#org-modern][+org-modern]]
-- [[#evil][+evil]]
-- [[#devdocs][+devdocs]]
-- [[#deadgrep][+deadgrep]]
-- [[#icons][+icons]]
-- [[#tree-sitter][+tree-sitter]]
-- [[#copilot][+copilot]]
-- [[#gptel][+gptel]]
-- [[#term][+term]]
-- [[#helm][+helm]]
-- [[#magit][+magit]]
-- [[#lsp][+lsp]]
-- [[#lsp-ui][+lsp-ui]]
-- [[#hl-todo][+hl-todo]]
-- [[#flycheck][+flycheck]]
-- [[#which-key][+which-key]]
-- [[#modeline][+modeline]]
-- [[#ace-window][+ace-window]]
-- [[#yasnippet][+yasnippet]]
-- [[#corfu][+corfu]]
-- [[#toc-org][+toc-org]]
-- [[#vundo][+vundo]]
-- [[#prettier][+prettier]]
-- [[#git-gutter][+git-gutter]]
-- [[#marginalia][+marginalia]]
-- [[#indent][+indent]]
-- [[#go][+go]]
-- [[#activities][+activities]]
-- [[#orderless][+orderless]]
-- [[#docker][+docker]]
-- [[#git-timemachine][+git-timemachine]]
-- [[#markdown][+markdown]]
-- [[#protobuf][+protobuf]]
-- [[#dape][+dape]]
-- [[#vertico][+vertico]]
-- [[#org-roam][+org-roam]]
-- [[#restart][+restart]]
-- [[#grip][+grip]]
-- [[#org-cv][+org-cv]]
-- [[#pdf-tools][+pdf-tools]]
-- [[#eldoc-box][+eldoc-box]]
-- [[#compilation-buffer][+compilation-buffer]]
-- [[#rainbow-delimiters][+rainbow-delimiters]]
-- [[#rainbow-mode][+rainbow-mode]]
-- [[#casual][+casual]]
-- [[#literate-calc][+literate-calc]]
-- [[#zoom][+zoom]]
-- [[#circe][+circe]]
-- [[#swiper][+swiper]]
-- [[#zig][+zig]]
-- [[#ox-typst][+ox-typst]]
-- [[#code-folding][+code-folding]]
-- [[#pyvenv][+pyvenv]]
-- [[#pyright][+pyright]]
-- [[#grammar][+grammar]]
-- [[#helpful][+helpful]]
-- [[#keybindings][+keybindings]]
+** Table of Contents                                              :TOC_3_gh:
+  - [[#prelude][+prelude]]
+  - [[#compile-angel][+compile-angel]]
+  - [[#secrets][+secrets]]
+  - [[#theme][+theme]]
+  - [[#editor][+editor]]
+  - [[#envrc][+envrc]]
+  - [[#org][+org]]
+  - [[#dired][+dired]]
+    - [[#useful-shorcuts][Useful shorcuts]]
+  - [[#dirvish][+dirvish]]
+  - [[#agenda][+agenda]]
+  - [[#org-modern][+org-modern]]
+  - [[#evil][+evil]]
+  - [[#devdocs][+devdocs]]
+  - [[#deadgrep][+deadgrep]]
+  - [[#icons][+icons]]
+  - [[#tree-sitter][+tree-sitter]]
+  - [[#copilot][+copilot]]
+  - [[#gptel][+gptel]]
+  - [[#term][+term]]
+  - [[#helm][+helm]]
+  - [[#magit][+magit]]
+  - [[#lsp][+lsp]]
+  - [[#lsp-ui][+lsp-ui]]
+  - [[#hl-todo][+hl-todo]]
+  - [[#flycheck][+flycheck]]
+  - [[#which-key][+which-key]]
+  - [[#modeline][+modeline]]
+  - [[#ace-window][+ace-window]]
+  - [[#yasnippet][+yasnippet]]
+  - [[#corfu][+corfu]]
+  - [[#toc-org][+toc-org]]
+  - [[#vundo][+vundo]]
+  - [[#prettier][+prettier]]
+  - [[#git-gutter][+git-gutter]]
+  - [[#marginalia][+marginalia]]
+  - [[#indent][+indent]]
+  - [[#go][+go]]
+  - [[#activities][+activities]]
+  - [[#orderless][+orderless]]
+  - [[#docker][+docker]]
+  - [[#git-timemachine][+git-timemachine]]
+  - [[#markdown][+markdown]]
+  - [[#protobuf][+protobuf]]
+  - [[#dape][+dape]]
+  - [[#vertico][+vertico]]
+  - [[#org-roam][+org-roam]]
+  - [[#restart][+restart]]
+  - [[#grip][+grip]]
+  - [[#org-cv][+org-cv]]
+  - [[#pdf-tools][+pdf-tools]]
+  - [[#eldoc-box][+eldoc-box]]
+  - [[#compilation-buffer][+compilation-buffer]]
+  - [[#rainbow-delimiters][+rainbow-delimiters]]
+  - [[#rainbow-mode][+rainbow-mode]]
+  - [[#casual][+casual]]
+  - [[#literate-calc][+literate-calc]]
+  - [[#zoom][+zoom]]
+  - [[#circe][+circe]]
+  - [[#swiper][+swiper]]
+  - [[#zig][+zig]]
+  - [[#ox-typst][+ox-typst]]
+  - [[#code-folding][+code-folding]]
+  - [[#pyvenv][+pyvenv]]
+  - [[#pyright][+pyright]]
+  - [[#grammar][+grammar]]
+  - [[#helpful][+helpful]]
+  - [[#keybindings][+keybindings]]
 
-* +prelude
+** +prelude
 This =config.org= file gets tangled into =post-init.el=. Without =no-byte-compile: t;=, bad things happen.
 
 #+begin_src emacs-lisp
   ;;; post-init.el --- My Emacs Config -*- lexical-binding: t; no-byte-compile: t; -*-
 #+end_src
 
-* +compile-angel
+** +compile-angel
 When using compile-angel.el, it is recommended to make it the first package configured.
 
 #+begin_src emacs-lisp
@@ -108,7 +108,7 @@ When using compile-angel.el, it is recommended to make it the first package conf
   (eval-when-compile (require 'use-package))
 #+end_src
 
-* +secrets
+** +secrets
 Put configuration you'd like to keep hidden in =~/.emacs.d/secrets.el=.
 
 #+begin_src emacs-lisp
@@ -118,7 +118,7 @@ Put configuration you'd like to keep hidden in =~/.emacs.d/secrets.el=.
   (setq auth-sources '("~/.authinfo.gpg"))
 #+end_src
 
-* +theme
+** +theme
 
 #+begin_src emacs-lisp
   ;; Catpuccin
@@ -163,7 +163,7 @@ Put configuration you'd like to keep hidden in =~/.emacs.d/secrets.el=.
   ;;   (solaire-global-mode +1))
 #+end_src
 
-* +editor
+** +editor
 General editor configuration.
 
 #+begin_src emacs-lisp
@@ -213,7 +213,7 @@ General editor configuration.
                               (hs-minor-mode +1)))
 #+end_src
 
-* +envrc
+** +envrc
 Integrates direnv into Emacs. This is especially useful when the dev environment is managed with Nix flakes.
 
 #+begin_src emacs-lisp
@@ -223,7 +223,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     :hook (after-init . envrc-global-mode))
 #+end_src
 
-* +org
+** +org
 
 #+begin_src emacs-lisp
   (use-package org
@@ -262,7 +262,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     (setq org-archive-location "archive.org::datetree/"))
 #+end_src
 
-* +dired
+** +dired
 
 #+begin_src emacs-lisp
   (use-package dired-gitignore
@@ -272,13 +272,13 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     :hook (dired-mode . #'dired-gitignore-global-mode))
 #+end_src
 
-** Useful shorcuts
+*** Useful shorcuts
 | Description       | Keybind |
 |-------------------+---------|
 | Create file       | =C-x C-f= |
 | Enter wdired mode | =i=       |
 
-* +dirvish
+** +dirvish
 
 #+begin_src emacs-lisp
   (use-package dirvish
@@ -291,7 +291,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     (setq dirvish-mode-line-format '(:left (sort symlink) :right (omit yank index))))
 #+end_src
 
-* +agenda
+** +agenda
 
 #+begin_src emacs-lisp
   ;; Inspired by: https://www.youtube.com/watch?v=a_WNtuefREM
@@ -387,7 +387,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
      '(org-super-agenda-header ((t (:inherit custom-button :weight bold :height 1.05))))))
 #+end_src
 
-* +org-modern
+** +org-modern
 
 #+begin_src emacs-lisp
   (use-package org-modern
@@ -436,7 +436,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     (global-org-modern-mode))
 #+end_src
 
-* +evil
+** +evil
 
 #+begin_src emacs-lisp
   (setq evil-want-integration t)
@@ -493,7 +493,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     (evil-commentary-mode +1))
 #+end_src
 
-* +devdocs
+** +devdocs
 
 #+begin_src emacs-lisp
   (use-package devdocs
@@ -506,7 +506,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     (devdocs-lookup t))
 #+end_src
 
-* +deadgrep
+** +deadgrep
 
 #+begin_src emacs-lisp
   (use-package deadgrep
@@ -515,7 +515,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     :after evil)
 #+end_src
 
-* +icons
+** +icons
 
 #+begin_src emacs-lisp
   (use-package all-the-icons
@@ -529,7 +529,7 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     )
 #+end_src
 
-* +tree-sitter
+** +tree-sitter
 This configuration file is used to add language support to TS and to activate lsp-mode when appropriate. Check that the
 versions are up-to-date every so often.
 
@@ -608,7 +608,7 @@ versions are up-to-date every so often.
     (os/setup-install-grammars))
 #+end_src
 
-* +copilot
+** +copilot
 
 #+begin_src emacs-lisp
   (use-package copilot
@@ -627,7 +627,7 @@ versions are up-to-date every so often.
     (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2)))
 #+end_src
 
-* +gptel
+** +gptel
 I use [[https://github.com/karthink/gptel?tab=readme-ov-file#optional-securing-api-keys-with-authinfo][authinfo]] to provide API keys to GPTel.
 
 #+begin_src emacs-lisp
@@ -663,7 +663,7 @@ I use [[https://github.com/karthink/gptel?tab=readme-ov-file#optional-securing-a
     :hook (magit-mode . gptel-magit-install))
 #+end_src
 
-* +term
+** +term
 
 #+begin_src emacs-lisp
   (use-package vterm
@@ -692,7 +692,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
                    (window-height . 0.3))))
 #+end_src
 
-* +helm
+** +helm
 
 #+begin_src emacs-lisp
   (use-package helm
@@ -716,7 +716,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     :after helm)
 #+end_src
 
-* +magit
+** +magit
 
 #+begin_src emacs-lisp
   (use-package magit
@@ -735,7 +735,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     :config (magit-todos-mode +1))
 #+end_src
 
-* +lsp
+** +lsp
 
 #+begin_src emacs-lisp
   (use-package lsp-mode
@@ -800,7 +800,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     (setq lsp-use-plists t))
 #+end_src
 
-* +lsp-ui
+** +lsp-ui
 
 #+begin_src emacs-lisp
   (use-package lsp-ui
@@ -818,7 +818,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
                   lsp-ui-doc-position 'at-point))
 #+end_src
 
-* +hl-todo
+** +hl-todo
 
 #+begin_src emacs-lisp
   (use-package hl-todo
@@ -832,7 +832,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
               #'hl-todo-search-and-highlight t))
 #+end_src
 
-* +flycheck
+** +flycheck
 
 #+begin_src emacs-lisp
   (use-package flycheck
@@ -845,7 +845,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
                 ("M-p" . flycheck-previous-error)))
 #+end_src
 
-* +which-key
+** +which-key
 
 #+begin_src emacs-lisp
   (use-package which-key
@@ -859,7 +859,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     (which-key-mode))
 #+end_src
 
-* +modeline
+** +modeline
 
 #+begin_src emacs-lisp
   (use-package doom-modeline
@@ -872,7 +872,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     (column-number-mode t))
 #+end_src
 
-* +ace-window
+** +ace-window
 
 #+begin_src emacs-lisp
   (use-package ace-window
@@ -882,7 +882,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     (global-set-key (kbd "M-o") 'ace-window))
 #+end_src
 
-* +yasnippet
+** +yasnippet
 
 #+begin_src emacs-lisp
   (use-package yasnippet
@@ -910,7 +910,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     :after yasnippet)
 #+end_src
 
-* +corfu
+** +corfu
 
 #+begin_src emacs-lisp
   (use-package corfu
@@ -942,7 +942,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     (corfu-popupinfo-mode))
 #+end_src
 
-* +toc-org
+** +toc-org
 
 #+begin_src emacs-lisp
   (use-package toc-org
@@ -953,7 +953,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     :bind (:map markdown-mode-map
                 ("C-c C-o" . toc-org-markdown-follow-thing-at-point)))
 #+end_src
-* +vundo
+** +vundo
 
 #+begin_src emacs-lisp
   (use-package undo-fu-session
@@ -970,7 +970,7 @@ like VSCode. This solution shares a terminal buffer between every frame.
     (setq vundo-glyph-alist vundo-unicode-symbols))
 #+end_src
 
-* +prettier
+** +prettier
 Uses [[https://github.com/fsouza/prettierd][prettierd]].
 
 #+begin_src emacs-lisp
@@ -986,7 +986,7 @@ Uses [[https://github.com/fsouza/prettierd][prettierd]].
            (tsx-ts-mode        . prettier-js-mode)))
 #+end_src
 
-* +git-gutter
+** +git-gutter
 
 #+begin_src emacs-lisp
   (use-package git-gutter
@@ -1003,7 +1003,7 @@ Uses [[https://github.com/fsouza/prettierd][prettierd]].
     (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 #+end_src
 
-* +marginalia
+** +marginalia
 
 #+begin_src emacs-lisp
   (use-package marginalia
@@ -1015,7 +1015,7 @@ Uses [[https://github.com/fsouza/prettierd][prettierd]].
     (marginalia-mode))
 #+end_src
 
-* +indent
+** +indent
 Infers indentation style from the current buffer.
 
 #+begin_src emacs-lisp
@@ -1026,7 +1026,7 @@ Infers indentation style from the current buffer.
     (dtrt-indent-global-mode +1))
 #+end_src
 
-* +go
+** +go
 
 #+begin_src emacs-lisp
   (use-package go-mode
@@ -1044,7 +1044,7 @@ Infers indentation style from the current buffer.
                 (defalias 'godef-describe #'lsp-ui-doc-glance))))
 #+end_src
 
-* +activities
+** +activities
 
 #+begin_src emacs-lisp
   (use-package activities
@@ -1054,7 +1054,7 @@ Infers indentation style from the current buffer.
     (activities-mode)) 
 #+end_src
 
-* +orderless
+** +orderless
 Configured to use fuzzy matching. e.g. =minimal-emacs-user-directory= can be found with =meudir=.
 
 #+begin_src emacs-lisp
@@ -1074,7 +1074,7 @@ Configured to use fuzzy matching. e.g. =minimal-emacs-user-directory= can be fou
             orderless-flex)))
 #+end_src
 
-* +docker
+** +docker
 
 #+begin_src emacs-lisp
   (use-package docker
@@ -1082,7 +1082,7 @@ Configured to use fuzzy matching. e.g. =minimal-emacs-user-directory= can be fou
     :defer t)
 #+end_src
 
-* +git-timemachine
+** +git-timemachine
 git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= allows for evil to work in
 =git-timemachine-mode=. Pressing =?= will display the timemachine's keybinds.
 
@@ -1097,7 +1097,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
        (add-hook 'git-timemachine-mode-hook #'evil-normalize-keymaps)))
 #+end_src
 
-* +markdown
+** +markdown
 
 #+begin_src emacs-lisp
   (use-package markdown-toc
@@ -1144,7 +1144,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
           markdown-mouse-follow-link nil))
 #+end_src
 
-* +protobuf
+** +protobuf
 
 #+begin_src emacs-lisp
   (use-package protobuf-mode
@@ -1152,7 +1152,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
     :defer t)
 #+end_src
 
-* +dape
+** +dape
 
 #+begin_src emacs-lisp
   (use-package dape
@@ -1176,7 +1176,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
     (window-sides-vertical t))
 #+end_src
 
-* +vertico
+** +vertico
 
 #+begin_src emacs-lisp
   (use-package vertico
@@ -1198,7 +1198,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
      '(read-only t cursor-intangible t face minibuffer-prompt)))
 #+end_src
 
-* +org-roam
+** +org-roam
 
 #+begin_src emacs-lisp
   (use-package org-roam
@@ -1211,14 +1211,14 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
     (org-roam-db-autosync-mode))
 #+end_src
 
-* +restart
+** +restart
 
 #+begin_src emacs-lisp
   (use-package restart-emacs
     :straight t)
 #+end_src
 
-* +grip
+** +grip
 
 #+begin_src emacs-lisp
   (use-package grip-mode
@@ -1228,7 +1228,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
     (setq grip-command 'auto))
 #+end_src
 
-* +org-cv
+** +org-cv
 
 #+begin_src emacs-lisp
   (straight-use-package '(org-cv :host gitlab
@@ -1242,7 +1242,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
     (setq org-preview-latex-default-process 'dvisvgm))
 #+end_src
 
-* +pdf-tools
+** +pdf-tools
 
 #+begin_src emacs-lisp
   (use-package pdf-tools
@@ -1252,7 +1252,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
     (pdf-loader-install))
 #+end_src
 
-* +eldoc-box
+** +eldoc-box
 
 #+begin_src emacs-lisp
   (use-package eldoc-box
@@ -1267,7 +1267,7 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
     (set-face-attribute 'eldoc-box-border nil :background (face-attribute 'mode-line-inactive :background)))
 #+end_src
 
-* +compilation-buffer
+** +compilation-buffer
 The compilation buffer doesn't handle escape codes well. fancy-compilation with xterm-colors improves the look of the
 compilation buffer, though it still isn't perfect.
 
@@ -1288,7 +1288,7 @@ compilation buffer, though it still isn't perfect.
       (funcall f proc (xterm-color-filter string))))
 #+end_src
 
-* +rainbow-delimiters
+** +rainbow-delimiters
 
 #+begin_src emacs-lisp
   (use-package rainbow-delimiters
@@ -1301,7 +1301,7 @@ compilation buffer, though it still isn't perfect.
     (set-face-attribute 'rainbow-delimiters-unmatched-face  nil :foreground "#f0008b"))
 #+end_src
 
-* +rainbow-mode
+** +rainbow-mode
 
 #+begin_src emacs-lisp
   (use-package rainbow-mode
@@ -1311,7 +1311,7 @@ compilation buffer, though it still isn't perfect.
     (prog-mode . rainbow-mode))
 #+end_src
 
-* +casual
+** +casual
 Helps to remember keybinds that don't show up in which-key. =C-o= opens a transient help menu for various built-in and
 third-party Emacs modes. For example, open =M-x calc= and then press =C-o= to open the help menu. Try it in a normal text
 buffer or your agenda.
@@ -1414,7 +1414,7 @@ buffer or your agenda.
         (evil-define-key '(normal emacs) reb-lisp-mode-map (kbd "C-o") #'casual-re-builder-tmenu))))
 #+end_src
 
-* +literate-calc
+** +literate-calc
 Enabling =literate-calc-mode= allows you to do "literate calculations" in the current buffer. See an
 [[https://github.com/sulami/literate-calc-mode.el/blob/bdfdb6e526cdcf987ecded3bd9032990e5be1236/README.org?plain=1#L165-L217][example here]].
 
@@ -1424,7 +1424,7 @@ Enabling =literate-calc-mode= allows you to do "literate calculations" in the cu
     :defer t)
 #+end_src
 
-* +zoom
+** +zoom
 Make the selected window larger. Working version of golden-ratio.el.
 
 #+begin_src emacs-lisp
@@ -1438,7 +1438,7 @@ Make the selected window larger. Working version of golden-ratio.el.
      '(zoom-ignored-major-modes '(vterm-mode))))
 #+end_src
 
-* +circe
+** +circe
 
 #+begin_src emacs-lisp
   (use-package circe
@@ -1460,7 +1460,7 @@ Make the selected window larger. Working version of golden-ratio.el.
     (setq circe-reduce-lurker-spam t))
 #+end_src
 
-* +swiper
+** +swiper
 
 #+begin_src emacs-lisp
   (use-package swiper-helm
@@ -1468,7 +1468,7 @@ Make the selected window larger. Working version of golden-ratio.el.
     :defer t)
 #+end_src
 
-* +zig
+** +zig
 
 #+begin_src emacs-lisp
   (use-package zig-mode
@@ -1488,7 +1488,7 @@ Make the selected window larger. Working version of golden-ratio.el.
            ("\\.zon\\'" . zig-ts-mode)))
 #+end_src
 
-* +ox-typst
+** +ox-typst
 An exporter that converts org to typst.
 
 #+begin_src emacs-lisp
@@ -1500,7 +1500,7 @@ An exporter that converts org to typst.
           org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
 #+end_src
 
-* +code-folding
+** +code-folding
 
 #+begin_src emacs-lisp
   (use-package vimish-fold
@@ -1519,7 +1519,7 @@ An exporter that converts org to typst.
     (global-evil-vimish-fold-mode))
 #+end_src
 
-* +pyvenv
+** +pyvenv
 
 #+begin_src emacs-lisp
   (use-package pyvenv
@@ -1532,7 +1532,7 @@ An exporter that converts org to typst.
           '(pyvenv-virtual-env-name ("[venv:" pyvenv-virtual-env-name "] "))))
 #+end_src
 
-* +pyright
+** +pyright
 
 #+begin_src emacs-lisp
   (use-package lsp-pyright
@@ -1544,7 +1544,7 @@ An exporter that converts org to typst.
                            (lsp-deferred))))
 #+end_src
 
-* +grammar
+** +grammar
 This is slow/buggy/not good right now.
 
 #+begin_src emacs-lisp
@@ -1571,7 +1571,7 @@ This is slow/buggy/not good right now.
   ;;                                       lsp-ltex-plus--stored-dictionary)))
 #+end_src
 
-* +helpful
+** +helpful
 
 #+begin_src emacs-lisp
   (use-package helpful
@@ -1579,7 +1579,7 @@ This is slow/buggy/not good right now.
     :defer t)
 #+end_src
     
-* +keybindings
+** +keybindings
 | Function     | Prefix |
 |--------------+--------|
 | Activities   | =SPC a=  |
