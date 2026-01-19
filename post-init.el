@@ -1154,14 +1154,6 @@
   :config
   (setq helm-completion-style 'emacs))
 
-(use-package helm-icons
-  :straight '(helm-icons :type git :host github :repo "yyoncho/helm-icons")
-  :defer t
-  :config
-  (setq helm-icons-provider 'all-the-icons)
-  :init
-  (helm-icons-enable))
-
 (use-package helm-lsp
   :straight t
   :defer t
