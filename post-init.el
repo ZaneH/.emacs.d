@@ -1151,20 +1151,20 @@
   (setq org-typst-from-latex-environment #'org-typst-from-latex-with-naive
         org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
 
-(use-package vimish-fold
+(use-package treesit-fold
   :straight t
   :defer t
-  :after evil)
+  :hook (prog-mode . treesit-fold-mode))
 
-(use-package evil-vimish-fold
+(use-package savefold
   :straight t
-  :defer t
-  :after vimish-fold
+  ;; :defer t -- Do not defer
   :init
-  (setq evil-vimish-fold-mode-lighter " ⮒")
-  (setq evil-vimish-fold-target-modes '(prog-mode conf-mode text-mode))
+  (setq savefold-backends '(org treesit-fold markdown))
+  (setq savefold-directory (locate-user-emacs-file "savefold"))
+  (setq org-startup-folded 'showeverything)
   :config
-  (global-evil-vimish-fold-mode))
+  (savefold-mode +1))
 
 (use-package pyvenv
   :straight t
