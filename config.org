@@ -38,6 +38,7 @@
   - [[#prettier][+prettier]]
   - [[#git-gutter][+git-gutter]]
   - [[#marginalia][+marginalia]]
+  - [[#centaur-tabs][+centaur-tabs]]
   - [[#indent][+indent]]
   - [[#go][+go]]
   - [[#activities][+activities]]
@@ -570,7 +571,7 @@ support for languages. Check that the grammar versions are up-to-date every so o
            ("\\.cjs\\'" . typescript-ts-mode)
            ("\\.jsx\\'" . tsx-ts-mode)
            ("\\.json\\'" .  json-ts-mode)
-           ("\\.Dockerfile\\'" . dockerfile-ts-mode)
+           ("/Dockerfile\\'" . dockerfile-ts-mode)
            ("\\.prisma\\'" . prisma-ts-mode)
            ("\\.go\\'" . go-ts-mode)
            ("\\.yaml\\'" . yaml-ts-mode)
@@ -601,6 +602,7 @@ support for languages. Check that the grammar versions are up-to-date every so o
                  (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))
                  (prisma "https://github.com/victorhqc/tree-sitter-prisma")
                  (nix . ("https://github.com/nix-community/tree-sitter-nix" "v0.3.0"))
+                 (dockerfile "https://github.com/camdencheek/tree-sitter-dockerfile")
                  (zig "https://github.com/tree-sitter-grammars/tree-sitter-zig")))
         (add-to-list 'treesit-language-source-alist grammar)
         (unless (treesit-language-available-p (car grammar))
@@ -1016,6 +1018,66 @@ Uses [[https://github.com/fsouza/prettierd][prettierd]].
                 ("M-A" . marginalia-cycle))
     :init
     (marginalia-mode))
+#+end_src
+
+** +centaur-tabs
+
+#+begin_src emacs-lisp
+  (use-package centaur-tabs
+    :straight t
+    :config
+    (setq centaur-tabs-style "bar"
+          centaur-tabs-set-bar 'left
+          x-underline-at-descent-line t
+          centaur-tabs-gray-out-icons 'buffer
+          centaur-tabs-icon-type 'all-the-icons
+          centaur-tabs-set-icons t
+          centaur-tabs-height 32
+          centaur-tabs-set-modified-marker t
+          centaur-tabs-show-count nil)
+    (centaur-tabs-change-fonts (face-attribute 'default :font) 110)
+    (centaur-tabs-mode t)
+    (centaur-tabs-headline-match)
+    (setq uniquify-separator "/")
+    (setq uniquify-buffer-name-style 'forward)
+    
+    (defun centaur-tabs-buffer-groups ()
+      "`centaur-tabs-buffer-groups' control buffers' group rules.
+
+        Group centaur-tabs with mode if buffer is derived from `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
+        All buffer name start with * will group to \"Emacs\".
+        Other buffer group by `centaur-tabs-get-group-name' with project name."
+      (list
+       (cond
+        ((or (string-equal "*" (substring (buffer-name) 0 1))
+             (memq major-mode '(magit-process-mode
+                                magit-status-mode
+                                magit-diff-mode
+                                magit-log-mode
+                                magit-file-mode
+                                magit-blob-mode
+                                magit-blame-mode)))
+         "Emacs")
+        ((derived-mode-p 'prog-mode)
+         "Editing")
+        ((derived-mode-p 'dired-mode)
+         "Dired")
+        ((memq major-mode '(helpful-mode
+                            help-mode))
+         "Help")
+        ((memq major-mode '(org-mode
+                            org-agenda-clockreport-mode
+                            org-src-mode
+                            org-agenda-mode
+                            org-beamer-mode
+                            org-indent-mode
+                            org-bullets-mode
+                            org-cdlatex-mode
+                            org-agenda-log-mode
+                            diary-mode))
+         "OrgMode")
+        (t
+         (centaur-tabs-get-group-name (current-buffer)))))))
 #+end_src
 
 ** +indent
@@ -1649,7 +1711,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
      :keymaps 'override
      "," (general-simulate-key "SPC m"))
 
-    ;;; Global keybindings (non-leader)
+      ;;; Global keybindings (non-leader)
     (general-define-key
      :states '(normal visual motion)
      ;; Smart tab behavior
@@ -1685,7 +1747,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
      "<mouse-8>" 'evil-jump-backward
      "<mouse-9>" 'evil-jump-forward)
 
-    ;;; Leader key bindings
+      ;;; Leader key bindings
     (my/leader
       ;; Top-level bindings
       "SPC" '(project-find-file :which-key "Find file in project")
@@ -1698,7 +1760,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "h"   '(help-command :which-key "Help")
       "/"   '(deadgrep :which-key "Search project")
 
-      ;;; <leader> & --- snippets
+        ;;; <leader> & --- snippets
       "&"    '(:ignore t :which-key "snippets")
       "&n"   '(yas-new-snippet :which-key "New snippet")
       "&i"   '(yas-insert-snippet :which-key "Snippet")
@@ -1707,7 +1769,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "&c"   '(aya-create :which-key "Create Temp Template")
       "&e"   '(aya-expand :which-key "Use Temp Template")
 
-      ;;; <leader> a --- activities
+        ;;; <leader> a --- activities
       "a"   '(:ignore t :which-key "activities")
       "aa"  '(activities-resume :which-key "Resume activity")
       "ac"  '(activities-new :which-key "Create activity")
@@ -1721,7 +1783,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "aR"  '(activities-rename :which-key "Rename activity")
       "ax"  '(activities-discard :which-key "Discard activity")
       
-      ;;; <leader> b --- buffer
+        ;;; <leader> b --- buffer
       "b"   '(:ignore t :which-key "buffer")
       "bb"  '(helm-buffers-list :which-key "Switch buffer")
       "bB"  '(switch-to-buffer :which-key "Switch buffer (no helm)")
@@ -1741,7 +1803,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "bz"  '(bury-buffer :which-key "Bury buffer")
       "bx"  '(scratch-buffer :which-key "Scratch buffer")
       
-      ;;; <leader> c --- code
+        ;;; <leader> c --- code
       "c"   '(:ignore t :which-key "code")
       "ca"  '(lsp-execute-code-action :which-key "Code action")
       "cc"  '(compile :which-key "Compile")
@@ -1757,7 +1819,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "ct"  '(lsp-find-type-definition :which-key "Type definition")
       "cx"  '(flycheck-list-errors :which-key "List errors")
 
-      ;;; <leader> d --- debugger
+        ;;; <leader> d --- debugger
       "d"   '(:ignore t :which-key "debugger")
       "dd"  '(dape :which-key "Open Dape")
       "dp"  '(dape-pause :which-key "Pause")
@@ -1784,7 +1846,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "dD"  '(dape-disconnect-quit :which-key "Disconnect & Quit")
       "dq"  '(dape-quit :which-key "Quit")
       
-      ;;; <leader> f --- file
+        ;;; <leader> f --- file
       "f"   '(:ignore t :which-key "file")
       "ff"  '(helm-find-files :which-key "Find file")
       "fF"  '(find-file-other-window :which-key "Find file other window")
@@ -1794,7 +1856,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "fd"  '(dired :which-key "Open dired")
       "fD"  '(dired-jump :which-key "Dired jump")
 
-      ;;; <leader> g --- git/magit
+        ;;; <leader> g --- git/magit
       "g"   '(:ignore t :which-key "git")
       "gg"  '(magit-status :which-key "Magit status")
       "gG"  '(magit-status-here :which-key "Magit status here")
@@ -1840,7 +1902,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "gCi" '(forge-create-issue :which-key "Create issue")
       "gCp" '(forge-create-pullreq :which-key "Create pull request")
 
-      ;;; <leader> h --- help
+        ;;; <leader> h --- help
       "h"   '(:ignore t :which-key "help")
       "hd"  '(devdocs-lookup :which-key "Devdocs lookup")
       "hD"  '(+my/devdocs-choose :which-key "Devdocs choose")
@@ -1850,19 +1912,19 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "hf"  '(helpful-function :which-key "Describe command")
       "ht"  '(tldr :which-key "TLDR")
       
-      ;;; <leader> i --- insert
+        ;;; <leader> i --- insert
       "i"   '(:ignore t :which-key "insert")
       "if"  '(insert-file :which-key "Insert file")
       "ir"  '(evil-show-registers :which-key "From register")
       "iy"  '(yank-pop :which-key "From kill ring")
       "is"  '(yas-insert-snippet :which-key "Snippet")
 
-      ;;; <leader> I --- IRC
+        ;;; <leader> I --- IRC
       "I"   '(:ignore t :which-key "irc")
       "Io"  '(circe :which-key "Open Circe")
       "Ir"  '(circe-reconnect :which-key "Reconnect to server")
 
-      ;;; <leader> n --- notes
+        ;;; <leader> n --- notes
       "n"   '(:ignore t :which-key "notes")
       "na"  '(org-agenda :which-key "Org agenda")
       "nl"  '(org-store-link :which-key "Org store link")
@@ -1882,7 +1944,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "nrR" '(org-roam-buffer-display-dedicated :which-key "Launch roam buffer")
       "nrs" '(org-roam-db-sync :which-key "Sync database")
       
-      ;;; <leader> o --- open
+        ;;; <leader> o --- open
       "o"   '(:ignore t :which-key "open")
       "oaa" '(org-agenda :which-key "Agenda")
       "oat" '(org-todo-list :which-key "Todo list")
@@ -1891,19 +1953,19 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "oD"  '(docker :which-key "Docker")
       "of"  '(make-frame :which-key "New frame")
 
-      ;;; <leader> o --- open llm
+        ;;; <leader> o --- open llm
       "oll" '(gptel :which-key "Open gptel")
       "olm" '(gptel-menu :which-key "Open gptel menu")
       "ola" '(gptel-add :which-key "Add text to context")
       "olf" '(gptel-add-file :which-key "Add file to context")
       "ols" '(gptel-send :which-key "Send to gptel")
 
-      ;;; <leader> p --- project
+        ;;; <leader> p --- project
       "p"   '(:ignore t :which-key "project")
       "pv"  '(dirvish-dwim :which-key "Open dirvish")
       "pg"  '(deadgrep :which-key "Deadgrep")
       
-      ;;; <leader> q --- quit/session
+        ;;; <leader> q --- quit/session
       "q"   '(:ignore t :which-key "quit/session")
       "qq"  '(save-buffers-kill-terminal :which-key "Quit Emacs")
       "qQ"  '(evil-quit-all :which-key "Quit without saving")
@@ -1911,7 +1973,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "qf"  '(delete-frame :which-key "Delete frame")
       "qr"  '(restart-emacs :which-key "Restart Emacs")
       
-      ;;; <leader> s --- search
+        ;;; <leader> s --- search
       "s"   '(:ignore t :which-key "search")
       "sb"  '(swiper :which-key "Search buffer")
       "ss"  '(swiper :which-key "Search buffer")
@@ -1921,7 +1983,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "sj"  '(evil-show-jumps :which-key "Jump list")
       "sr"  '(evil-show-marks :which-key "Show marks")
       
-      ;;; <leader> t --- toggle
+        ;;; <leader> t --- toggle
       "t"   '(:ignore t :which-key "toggle")
       "tf"  '(flycheck-mode :which-key "Flycheck")
       "tF"  '(toggle-frame-fullscreen :which-key "Fullscreen")
@@ -1931,7 +1993,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "tw"  '(visual-line-mode :which-key "Wrap lines")
       "tu"  '(vundo :which-key "Undo tree")
       
-      ;;; <leader> w --- window
+        ;;; <leader> w --- window
       "w"   '(:ignore t :which-key "window")
       "ww"  '(ace-window :which-key "Select window")
       "wd"  '(delete-window :which-key "Delete window")
@@ -1951,9 +2013,10 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "w+"  '(evil-window-increase-height :which-key "Increase height")
       "w-"  '(evil-window-decrease-height :which-key "Decrease height")
       "w>"  '(evil-window-increase-width :which-key "Increase width")
-      "w<"  '(evil-window-decrease-width :which-key "Decrease width"))
+      "w<"  '(evil-window-decrease-width :which-key "Decrease width")
+      "wt"  '(centaur-tabs-ace-jump :which-key "Jump tabs"))
 
-    ;;; evil-mc keybindings (multiple cursors)
+      ;;; evil-mc keybindings (multiple cursors)
     (my/leader
       :prefix "gz"
       :states '(normal visual)
@@ -1982,7 +2045,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
      "M-d" 'evil-mc-make-and-goto-next-match
      "M-D" 'evil-mc-make-and-goto-prev-match)
 
-    ;;; Helm-specific bindings
+      ;;; Helm-specific bindings
     (with-eval-after-load 'helm
       (general-define-key
        :keymaps 'helm-map
@@ -1998,7 +2061,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
        "C-h" 'helm-find-files-up-one-level
        "C-l" 'helm-execute-persistent-action))
 
-    ;;; Completion (Corfu) bindings
+      ;;; Completion (Corfu) bindings
     (with-eval-after-load 'corfu
       (general-define-key
        :keymaps 'corfu-map
@@ -2235,6 +2298,10 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
        :keymaps 'org-agenda-mode-map
        :states 'motion
        "C-SPC" 'org-agenda-show-and-scroll-up))
+
+    (with-eval-after-load 'centaur-tabs
+      (define-key evil-normal-state-map (kbd "g t") 'centaur-tabs-forward)
+      (define-key evil-normal-state-map (kbd "g T") 'centaur-tabs-backward))
 
     (with-eval-after-load 'dirvish
       (general-def dirvish-mode-map
