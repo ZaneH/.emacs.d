@@ -1,5 +1,5 @@
 * .emacs.d config
-The config and all of its documentation exist at [[file:config.org]] as a literate config. It should auto-tangle on-save.
+The config and all of its documentation exist at [[file:config.org]] as a literate config. It should auto-tangle when saved.
 
 ** Dependencies
 *npm*

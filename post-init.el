@@ -4,7 +4,8 @@
   :straight t
   :demand t
   :config
-  (setq compile-angel-verbose t)
+  ;; (setq compile-angel-verbose t) ;; Useful for debugging
+
   ;; The following directive prevents compile-angel from compiling your init
   ;; files. If you choose to remove this push to `compile-angel-excluded-files'
   ;; and compile your pre/post-init files, ensure you understand the
@@ -26,6 +27,8 @@
 
 (add-to-list 'load-path minimal-emacs-user-directory)
 (load "secrets")
+
+(setq auth-sources '("~/.authinfo.gpg"))
 
 ;; Catpuccin
 ;; (use-package catppuccin-theme)
@@ -1002,7 +1005,7 @@
 (use-package all-the-icons-dired
   :straight t
   ;; :defer t -- Do not defer
-)
+  )
 
 (use-package nix-ts-mode
   :straight t
@@ -1174,7 +1177,7 @@
 (use-package magit
   :straight t
   ;; :defer t -- Do not defer
-)
+  )
 
 (use-package forge
   :straight t
@@ -1185,8 +1188,6 @@
   ;; :defer t -- Do not defer
   :after magit
   :config (magit-todos-mode +1))
-
-(setq auth-sources '("~/.authinfo.gpg"))
 
 (use-package lsp-mode
   :straight t
@@ -1331,7 +1332,6 @@
   :defer t
   :after yasnippet)
 
-;;;; Code Completion
 (use-package corfu
   :straight t
   :defer t
@@ -1378,6 +1378,7 @@
   :defer t
   :config
   (setq prettier-js-command "prettierd")
+
   :hook ((typescript-ts-mode . prettier-js-mode)
          (js-ts-mode         . prettier-js-mode)
          (web-mode           . prettier-js-mode)
@@ -1400,7 +1401,7 @@
   :straight t
   :defer t
   :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
+              ("M-A" . marginalia-cycle))
   :init
   (marginalia-mode))
 
@@ -1505,7 +1506,6 @@
   :straight t
   :defer t)
 
-;; @see https://github.com/svaante/dape
 (use-package dape
   :straight t
   :defer t
@@ -1517,12 +1517,12 @@
   (dape-cwd-function #'projectile-project-root))
 
 (use-package repeat
-  :straight nil
+  :straight (:type built-in)
   :custom
   (repeat-mode +1))
 
 (use-package emacs
-  :straight nil
+  :straight (:type built-in)
   :custom
   (window-sides-vertical t))
 
@@ -1536,7 +1536,7 @@
   (vertico-mode))
 
 (use-package emacs
-  :straight nil
+  :straight (:type built-in)
   :custom
   (context-menu-mode t)
   (enable-recursive-minibuffers t)
@@ -1594,6 +1594,15 @@
   :commands (fancy-compilation-mode)
   :init
   (fancy-compilation-mode))
+
+(use-package xterm-color
+  :straight t
+  :defer t
+  :config
+  (setq compilation-environment '("TERM=xterm-256color"))
+  :init
+  (define-advice compilation-filter (:around (f proc string) xterm-color)
+    (funcall f proc (xterm-color-filter string))))
 
 (use-package rainbow-delimiters
   :straight t
@@ -1763,16 +1772,7 @@
   :after org
   :config
   (setq org-typst-from-latex-environment #'org-typst-from-latex-with-naive
-      org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
-
-(use-package xterm-color
-  :straight t
-  :defer t
-  :config
-  (setq compilation-environment '("TERM=xterm-256color"))
-  :init
-  (define-advice compilation-filter (:around (f proc string) xterm-color)
-    (funcall f proc (xterm-color-filter string))))
+        org-typst-from-latex-fragment #'org-typst-from-latex-with-naive))
 
 (use-package vimish-fold
   :straight t
@@ -1803,8 +1803,8 @@
   :defer t
   :custom (lsp-pyright-langserver-command "basedpyright")
   :hook (python-mode . (lambda ()
-                          (require 'lsp-pyright)
-                          (lsp-deferred))))
+                         (require 'lsp-pyright)
+                         (lsp-deferred))))
 
 ;; (use-package lsp-ltex-plus
 ;;   :straight (lsp-ltex-plus :type git
