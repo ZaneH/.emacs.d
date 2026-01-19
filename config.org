@@ -40,7 +40,6 @@
   - [[#prettier][+prettier]]
   - [[#git-gutter][+git-gutter]]
   - [[#marginalia][+marginalia]]
-  - [[#centaur-tabs][+centaur-tabs]]
   - [[#indent][+indent]]
   - [[#go][+go]]
   - [[#activities][+activities]]
@@ -931,7 +930,6 @@ like VSCode. This solution shares a terminal buffer between every frame.
     :init
     (global-set-key (kbd "M-o") 'ace-window))
 #+end_src
-
 ** +yasnippet
 
 #+begin_src emacs-lisp
@@ -960,7 +958,11 @@ like VSCode. This solution shares a terminal buffer between every frame.
     :after yasnippet)
 #+end_src
 
+
 ** +company
+If you're unsatisfied with the autocomplete, this is the place to be. The [[https://company-mode.github.io/manual/Backends.html#Grouped-Backends][company-mode docs]] require a bit of reading to
+understand.
+
 #+begin_src emacs-lisp
   (use-package company
     :straight t
@@ -1010,9 +1012,6 @@ like VSCode. This solution shares a terminal buffer between every frame.
     (setq company-box-show-single-candidate t
           company-box-backends-colors nil))
 #+end_src
-
-If you're unsatisfied with the autocomplete, this is the place to be. The [[https://company-mode.github.io/manual/Backends.html#Grouped-Backends][company-mode docs]] require a bit of reading to
-understand.
 
 ** +toc-org
 
@@ -1086,66 +1085,6 @@ Uses [[https://github.com/fsouza/prettierd][prettierd]].
                 ("M-A" . marginalia-cycle))
     :init
     (marginalia-mode))
-#+end_src
-
-** +centaur-tabs
-
-#+begin_src emacs-lisp
-  (use-package centaur-tabs
-    :straight t
-    :config
-    (setq centaur-tabs-style "bar"
-          centaur-tabs-set-bar 'left
-          x-underline-at-descent-line t
-          centaur-tabs-gray-out-icons 'buffer
-          centaur-tabs-icon-type 'all-the-icons
-          centaur-tabs-set-icons t
-          centaur-tabs-height 32
-          centaur-tabs-set-modified-marker t
-          centaur-tabs-show-count nil)
-    (centaur-tabs-change-fonts (face-attribute 'default :font) 110)
-    (centaur-tabs-mode t)
-    (centaur-tabs-headline-match)
-    (setq uniquify-separator "/")
-    (setq uniquify-buffer-name-style 'forward)
-    
-    (defun centaur-tabs-buffer-groups ()
-      "`centaur-tabs-buffer-groups' control buffers' group rules.
-
-        Group centaur-tabs with mode if buffer is derived from `eshell-mode' `emacs-lisp-mode' `dired-mode' `org-mode' `magit-mode'.
-        All buffer name start with * will group to \"Emacs\".
-        Other buffer group by `centaur-tabs-get-group-name' with project name."
-      (list
-       (cond
-        ((or (string-equal "*" (substring (buffer-name) 0 1))
-             (memq major-mode '(magit-process-mode
-                                magit-status-mode
-                                magit-diff-mode
-                                magit-log-mode
-                                magit-file-mode
-                                magit-blob-mode
-                                magit-blame-mode)))
-         "Emacs")
-        ((derived-mode-p 'prog-mode)
-         "Editing")
-        ((derived-mode-p 'dired-mode)
-         "Dired")
-        ((memq major-mode '(helpful-mode
-                            help-mode))
-         "Help")
-        ((memq major-mode '(org-mode
-                            org-agenda-clockreport-mode
-                            org-src-mode
-                            org-agenda-mode
-                            org-beamer-mode
-                            org-indent-mode
-                            org-bullets-mode
-                            org-cdlatex-mode
-                            org-agenda-log-mode
-                            diary-mode))
-         "OrgMode")
-        (t
-         (centaur-tabs-get-group-name (current-buffer)))))))
 #+end_src
 
 ** +indent
@@ -2081,8 +2020,7 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
       "w+"  '(evil-window-increase-height :which-key "Increase height")
       "w-"  '(evil-window-decrease-height :which-key "Decrease height")
       "w>"  '(evil-window-increase-width :which-key "Increase width")
-      "w<"  '(evil-window-decrease-width :which-key "Decrease width")
-      "wt"  '(centaur-tabs-ace-jump :which-key "Jump tabs"))
+      "w<"  '(evil-window-decrease-width :which-key "Decrease width"))
 
     ;;; evil-mc keybindings (multiple cursors)
     (my/leader
@@ -2356,10 +2294,6 @@ Here's some helpful shortcuts to get started: =M-o= (switch window), =M-<up>= (i
        :keymaps 'org-agenda-mode-map
        :states 'motion
        "C-SPC" 'org-agenda-show-and-scroll-up))
-
-    (with-eval-after-load 'centaur-tabs
-      (define-key evil-normal-state-map (kbd "g t") 'centaur-tabs-forward)
-      (define-key evil-normal-state-map (kbd "g T") 'centaur-tabs-backward))
 
     (with-eval-after-load 'dirvish
       (general-def dirvish-mode-map
