@@ -25,6 +25,11 @@
 
 (eval-when-compile (require 'use-package))
 
+(use-package benchmark-init
+  :straight t
+  :config
+  (add-hook 'after-init-hook 'benchmark-init/deactivate))
+
 (add-to-list 'load-path minimal-emacs-user-directory)
 (load "secrets")
 
@@ -747,12 +752,25 @@
         company-dabbrev-other-buffers nil
         company-dabbrev-ignore-case nil
         company-dabbrev-downcase nil
-        company-selection-wrap-around t)
+        company-selection-wrap-around t
+        company-show-quick-access 'on
+        company-begin-commands '(self-insert-command)
+        company-idle-delay 0.3
+
+        company-tooltip-align-annotations t
+        company-tooltip-flip-when-above t
+        company-tooltip-offset-display 'scrollbar
+        company-tooltip-width-grow-only t
+        company-tooltip-maximum-width 80)
+
   (setq company-idle-delay 0
         company-minimum-prefix-length 1)
-  (setq company-backends '((company-capf company-deabbrev-code :with company-yasnippet :seprate company-files)))
-  (setq company-frontends '(company-pseudo-tooltip-frontend))
-  (setq company-transformers '(company-sort-by-occurrence))
+  (setq company-backends '((company-capf company-dabbrev-code :with company-yasnippet company-files)))
+  (setq company-frontends '(company-pseudo-tooltip-frontend
+                            company-echo-metadata-frontend))
+
+  (setq company-transformers '(delete-dups
+                               company-sort-by-occurrence company-sort-prefer-same-case-prefix))
   (setq company-occurrence-weight-function 'company-occurrence-prefer-closest-above)
   :config
   (add-hook 'company-mode-hook #'evil-normalize-keymaps)
@@ -763,9 +781,11 @@
   :defer t
   :hook (company-mode . company-box-mode)
   :config
+  (setq company-box-icon-right-margin 1)
+  (setq company-box-max-candidates 50)
+  
   (setq company-box-show-single-candidate t
-        company-box-backends-colors nil
-        company-box-icons-alist 'company-box-icons-all-the-icons))
+        company-box-backends-colors nil))
 
 (use-package toc-org
   :straight t
@@ -1932,4 +1952,17 @@
    "M-=" 'evil-numbers/inc-at-pt
    "M--" 'evil-numbers/dec-at-pt
    "M-+" 'evil-numbers/inc-at-pt-incremental
-   "M-_" 'evil-numbers/dec-at-pt-incremental))
+   "M-_" 'evil-numbers/dec-at-pt-incremental)
+
+  (with-eval-after-load 'company
+    (define-key company-active-map
+                (kbd "TAB")
+                #'company-complete-common-or-cycle)
+
+    (define-key company-active-map
+                (kbd "RET")
+                (lambda ()
+                  (interactive)
+                  (if (company-tooltip-is-visible)
+                      (company-complete)
+                    (self-insert-command 1))))))
