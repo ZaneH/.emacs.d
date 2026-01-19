@@ -1,12 +1,11 @@
-#+TITLE: Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle yes
 #+PROPERTY: header-args:emacs-lisp :tangle ./post-init.el
 
 * Table of Contents                                                :TOC_2_gh:
-- [[#no-byte-compile][No Byte Compile]]
+- [[#prelude][+prelude]]
 - [[#compile-angel][+compile-angel]]
-- [[#secrets][Secrets]]
-- [[#theme][Theme]]
+- [[#secrets][+secrets]]
+- [[#theme][+theme]]
 - [[#editor][+editor]]
 - [[#envrc][+envrc]]
 - [[#org][+org]]
@@ -55,7 +54,7 @@
 - [[#org-cv][+org-cv]]
 - [[#pdf-tools][+pdf-tools]]
 - [[#eldoc-box][+eldoc-box]]
-- [[#compilation-buffer][Compilation Buffer]]
+- [[#compilation-buffer][+compilation-buffer]]
 - [[#rainbow-delimiters][+rainbow-delimiters]]
 - [[#rainbow-mode][+rainbow-mode]]
 - [[#casual][+casual]]
@@ -70,9 +69,9 @@
 - [[#pyright][+pyright]]
 - [[#grammar][+grammar]]
 - [[#helpful][+helpful]]
-- [[#keybindings][Keybindings]]
+- [[#keybindings][+keybindings]]
 
-* No Byte Compile
+* +prelude
 This =config.org= file gets tangled into =post-init.el=. Without =no-byte-compile: t;=, bad things happen.
 
 #+begin_src emacs-lisp
@@ -80,7 +79,7 @@ This =config.org= file gets tangled into =post-init.el=. Without =no-byte-compil
 #+end_src
 
 * +compile-angel
-When using compile-angel, it is recommended to be the first package configured.
+When using compile-angel.el, it is recommended to make it the first package configured.
 
 #+begin_src emacs-lisp
   (use-package compile-angel
@@ -109,7 +108,7 @@ When using compile-angel, it is recommended to be the first package configured.
   (eval-when-compile (require 'use-package))
 #+end_src
 
-* Secrets
+* +secrets
 Put configuration you'd like to keep hidden in =~/.emacs.d/secrets.el=.
 
 #+begin_src emacs-lisp
@@ -119,7 +118,7 @@ Put configuration you'd like to keep hidden in =~/.emacs.d/secrets.el=.
   (setq auth-sources '("~/.authinfo.gpg"))
 #+end_src
 
-* Theme
+* +theme
 
 #+begin_src emacs-lisp
   ;; Catpuccin
@@ -1260,7 +1259,7 @@ Configured to use fuzzy matching. e.g. =minimal-emacs-user-directory= can be fou
     (set-face-attribute 'eldoc-box-border nil :background (face-attribute 'mode-line-inactive :background)))
 #+end_src
 
-* Compilation Buffer
+* +compilation-buffer
 The compilation buffer doesn't handle escape codes well. fancy-compilation with xterm-colors improves the look of the
 compilation buffer, though it still isn't perfect.
 
@@ -1572,8 +1571,7 @@ This is slow/buggy/not good right now.
     :defer t)
 #+end_src
     
-* Keybindings
-
+* +keybindings
 | Function     | Prefix |
 |--------------+--------|
 | Activities   | =SPC a=  |
