@@ -635,6 +635,37 @@
                 lsp-ui-doc-include-signature t       ; Show signature
                 lsp-ui-doc-position 'at-point))
 
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (when-let ((command-from-exec-path (executable-find (car orig-result))))  ;; resolve command from exec-path (in case not found in $PATH)
+            (setcar orig-result command-from-exec-path))
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
+
 (use-package hl-todo
   :straight t
   ;; :defer t -- Do not defer
@@ -703,33 +734,38 @@
   :defer t
   :after yasnippet)
 
-(use-package corfu
+(use-package company
+  :straight t
+  :init
+  (setq company-global-modes
+        '(not erc-mode
+              circe-mode
+              message-mode
+              help-mode
+              gud-mode
+              vterm-mode)
+        company-dabbrev-other-buffers nil
+        company-dabbrev-ignore-case nil
+        company-dabbrev-downcase nil
+        company-selection-wrap-around t)
+  (setq company-idle-delay 0
+        company-minimum-prefix-length 1)
+  (setq company-backends '((company-capf company-deabbrev-code :with company-yasnippet :seprate company-files)))
+  (setq company-frontends '(company-pseudo-tooltip-frontend))
+  (setq company-transformers '(company-sort-by-occurrence))
+  (setq company-occurrence-weight-function 'company-occurrence-prefer-closest-above)
+  :config
+  (add-hook 'company-mode-hook #'evil-normalize-keymaps)
+  (add-hook 'after-init-hook 'global-company-mode))
+
+(use-package company-box
   :straight t
   :defer t
-  ;; Optional customizations
-  :custom
-  (corfu-cycle t)                 ; Allows cycling through candidates
-  (corfu-auto t)                  ; Enable auto completion
-  (corfu-auto-prefix 2)           ; Minimum length of prefix for completion
-  (corfu-auto-delay 0)            ; No delay for completion
-  (corfu-popupinfo-delay '(0.5 . 0.2))  ; Automatically update info popup after that number of seconds
-  (corfu-preview-current 'insert) ; insert previewed candidate
-  ;; (corfu-preselect 'first)     ; Enable to pre-select the first option
-  (corfu-preselect 'prompt)
-  (corfu-on-exact-match nil)      ; Don't auto expand tempel snippets
-  :bind (:map corfu-map
-              ("M-SPC"      . corfu-insert-separator)
-              ("TAB"        . corfu-next)
-              ([tab]        . corfu-next)
-              ("S-TAB"      . corfu-previous)
-              ([backtab]    . corfu-previous)
-              ("S-<return>" . corfu-insert)
-              ("RET"        . corfu-insert))
-
-  :init
-  (global-corfu-mode)
-  (corfu-history-mode)
-  (corfu-popupinfo-mode))
+  :hook (company-mode . company-box-mode)
+  :config
+  (setq company-box-show-single-candidate t
+        company-box-backends-colors nil
+        company-box-icons-alist 'company-box-icons-all-the-icons))
 
 (use-package toc-org
   :straight t
@@ -1334,7 +1370,7 @@
    "<mouse-8>" 'evil-jump-backward
    "<mouse-9>" 'evil-jump-forward)
 
-    ;;; Leader key bindings
+  ;;; Leader key bindings
   (my/leader
     ;; Top-level bindings
     "SPC" '(project-find-file :which-key "Find file in project")
@@ -1347,7 +1383,7 @@
     "h"   '(help-command :which-key "Help")
     "/"   '(deadgrep :which-key "Search project")
 
-      ;;; <leader> & --- snippets
+    ;;; <leader> & --- snippets
     "&"    '(:ignore t :which-key "snippets")
     "&n"   '(yas-new-snippet :which-key "New snippet")
     "&i"   '(yas-insert-snippet :which-key "Snippet")
@@ -1356,7 +1392,7 @@
     "&c"   '(aya-create :which-key "Create Temp Template")
     "&e"   '(aya-expand :which-key "Use Temp Template")
 
-      ;;; <leader> a --- activities
+    ;;; <leader> a --- activities
     "a"   '(:ignore t :which-key "activities")
     "aa"  '(activities-resume :which-key "Resume activity")
     "ac"  '(activities-new :which-key "Create activity")
@@ -1370,7 +1406,7 @@
     "aR"  '(activities-rename :which-key "Rename activity")
     "ax"  '(activities-discard :which-key "Discard activity")
     
-      ;;; <leader> b --- buffer
+    ;;; <leader> b --- buffer
     "b"   '(:ignore t :which-key "buffer")
     "bb"  '(helm-buffers-list :which-key "Switch buffer")
     "bB"  '(switch-to-buffer :which-key "Switch buffer (no helm)")
@@ -1389,8 +1425,8 @@
     "bS"  '(save-some-buffers :which-key "Save all buffers")
     "bz"  '(bury-buffer :which-key "Bury buffer")
     "bx"  '(scratch-buffer :which-key "Scratch buffer")
-    
-      ;;; <leader> c --- code
+
+    ;;; <leader> c --- code
     "c"   '(:ignore t :which-key "code")
     "ca"  '(lsp-execute-code-action :which-key "Code action")
     "cc"  '(compile :which-key "Compile")
@@ -1406,7 +1442,7 @@
     "ct"  '(lsp-find-type-definition :which-key "Type definition")
     "cx"  '(flycheck-list-errors :which-key "List errors")
 
-      ;;; <leader> d --- debugger
+    ;;; <leader> d --- debugger
     "d"   '(:ignore t :which-key "debugger")
     "dd"  '(dape :which-key "Open Dape")
     "dp"  '(dape-pause :which-key "Pause")
@@ -1433,7 +1469,7 @@
     "dD"  '(dape-disconnect-quit :which-key "Disconnect & Quit")
     "dq"  '(dape-quit :which-key "Quit")
     
-      ;;; <leader> f --- file
+    ;;; <leader> f --- file
     "f"   '(:ignore t :which-key "file")
     "ff"  '(helm-find-files :which-key "Find file")
     "fF"  '(find-file-other-window :which-key "Find file other window")
@@ -1443,7 +1479,7 @@
     "fd"  '(dired :which-key "Open dired")
     "fD"  '(dired-jump :which-key "Dired jump")
 
-      ;;; <leader> g --- git/magit
+    ;;; <leader> g --- git/magit
     "g"   '(:ignore t :which-key "git")
     "gg"  '(magit-status :which-key "Magit status")
     "gG"  '(magit-status-here :which-key "Magit status here")
@@ -1489,7 +1525,7 @@
     "gCi" '(forge-create-issue :which-key "Create issue")
     "gCp" '(forge-create-pullreq :which-key "Create pull request")
 
-      ;;; <leader> h --- help
+    ;;; <leader> h --- help
     "h"   '(:ignore t :which-key "help")
     "hd"  '(devdocs-lookup :which-key "Devdocs lookup")
     "hD"  '(+my/devdocs-choose :which-key "Devdocs choose")
@@ -1499,19 +1535,19 @@
     "hf"  '(helpful-function :which-key "Describe command")
     "ht"  '(tldr :which-key "TLDR")
     
-      ;;; <leader> i --- insert
+    ;;; <leader> i --- insert
     "i"   '(:ignore t :which-key "insert")
     "if"  '(insert-file :which-key "Insert file")
     "ir"  '(evil-show-registers :which-key "From register")
     "iy"  '(yank-pop :which-key "From kill ring")
     "is"  '(yas-insert-snippet :which-key "Snippet")
 
-      ;;; <leader> I --- IRC
+    ;;; <leader> I --- IRC
     "I"   '(:ignore t :which-key "irc")
     "Io"  '(circe :which-key "Open Circe")
     "Ir"  '(circe-reconnect :which-key "Reconnect to server")
 
-      ;;; <leader> n --- notes
+    ;;; <leader> n --- notes
     "n"   '(:ignore t :which-key "notes")
     "na"  '(org-agenda :which-key "Org agenda")
     "nl"  '(org-store-link :which-key "Org store link")
@@ -1531,7 +1567,7 @@
     "nrR" '(org-roam-buffer-display-dedicated :which-key "Launch roam buffer")
     "nrs" '(org-roam-db-sync :which-key "Sync database")
     
-      ;;; <leader> o --- open
+    ;;; <leader> o --- open
     "o"   '(:ignore t :which-key "open")
     "oaa" '(org-agenda :which-key "Agenda")
     "oat" '(org-todo-list :which-key "Todo list")
@@ -1540,19 +1576,19 @@
     "oD"  '(docker :which-key "Docker")
     "of"  '(make-frame :which-key "New frame")
 
-      ;;; <leader> o --- open llm
+    ;;; <leader> o --- open llm
     "oll" '(gptel :which-key "Open gptel")
     "olm" '(gptel-menu :which-key "Open gptel menu")
     "ola" '(gptel-add :which-key "Add text to context")
     "olf" '(gptel-add-file :which-key "Add file to context")
     "ols" '(gptel-send :which-key "Send to gptel")
 
-      ;;; <leader> p --- project
+    ;;; <leader> p --- project
     "p"   '(:ignore t :which-key "project")
     "pv"  '(dirvish-dwim :which-key "Open dirvish")
     "pg"  '(deadgrep :which-key "Deadgrep")
     
-      ;;; <leader> q --- quit/session
+    ;;; <leader> q --- quit/session
     "q"   '(:ignore t :which-key "quit/session")
     "qq"  '(save-buffers-kill-terminal :which-key "Quit Emacs")
     "qQ"  '(evil-quit-all :which-key "Quit without saving")
@@ -1560,7 +1596,7 @@
     "qf"  '(delete-frame :which-key "Delete frame")
     "qr"  '(restart-emacs :which-key "Restart Emacs")
     
-      ;;; <leader> s --- search
+    ;;; <leader> s --- search
     "s"   '(:ignore t :which-key "search")
     "sb"  '(swiper :which-key "Search buffer")
     "ss"  '(swiper :which-key "Search buffer")
@@ -1570,7 +1606,7 @@
     "sj"  '(evil-show-jumps :which-key "Jump list")
     "sr"  '(evil-show-marks :which-key "Show marks")
     
-      ;;; <leader> t --- toggle
+    ;;; <leader> t --- toggle
     "t"   '(:ignore t :which-key "toggle")
     "tf"  '(flycheck-mode :which-key "Flycheck")
     "tF"  '(toggle-frame-fullscreen :which-key "Fullscreen")
@@ -1580,7 +1616,7 @@
     "tw"  '(visual-line-mode :which-key "Wrap lines")
     "tu"  '(vundo :which-key "Undo tree")
     
-      ;;; <leader> w --- window
+    ;;; <leader> w --- window
     "w"   '(:ignore t :which-key "window")
     "ww"  '(ace-window :which-key "Select window")
     "wd"  '(delete-window :which-key "Delete window")
@@ -1603,7 +1639,7 @@
     "w<"  '(evil-window-decrease-width :which-key "Decrease width")
     "wt"  '(centaur-tabs-ace-jump :which-key "Jump tabs"))
 
-    ;;; evil-mc keybindings (multiple cursors)
+  ;;; evil-mc keybindings (multiple cursors)
   (my/leader
     :prefix "gz"
     :states '(normal visual)
@@ -1632,7 +1668,7 @@
    "M-d" 'evil-mc-make-and-goto-next-match
    "M-D" 'evil-mc-make-and-goto-prev-match)
 
-    ;;; Helm-specific bindings
+  ;;; Helm-specific bindings
   (with-eval-after-load 'helm
     (general-define-key
      :keymaps 'helm-map
@@ -1647,16 +1683,6 @@
      :keymaps 'helm-find-files-map
      "C-h" 'helm-find-files-up-one-level
      "C-l" 'helm-execute-persistent-action))
-
-    ;;; Completion (Corfu) bindings
-  (with-eval-after-load 'corfu
-    (general-define-key
-     :keymaps 'corfu-map
-     "C-j" 'corfu-next
-     "C-k" 'corfu-previous
-     "C-SPC" 'corfu-insert-separator
-     "TAB" 'corfu-insert
-     "RET" 'corfu-insert))
 
   ;; Bind C-SPC to open completion menu
   (setq set-mark-command-repeat-pop t)
