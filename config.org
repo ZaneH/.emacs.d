@@ -958,7 +958,6 @@ like VSCode. This solution shares a terminal buffer between every frame.
     :after yasnippet)
 #+end_src
 
-
 ** +company
 If you're unsatisfied with the autocomplete, this is the place to be. The [[https://company-mode.github.io/manual/Backends.html#Grouped-Backends][company-mode docs]] require a bit of reading to
 understand.
@@ -979,8 +978,9 @@ understand.
           company-dabbrev-downcase nil
           company-selection-wrap-around t
           company-show-quick-access 'on
-          company-begin-commands '(self-insert-command)
           company-idle-delay 0.3
+
+          company-begin-commands '(self-insert-command) ;; Disables the popup in org-mode
 
           company-tooltip-align-annotations t
           company-tooltip-flip-when-above t
@@ -990,7 +990,7 @@ understand.
 
     (setq company-idle-delay 0
           company-minimum-prefix-length 1)
-    (setq company-backends '((company-capf company-dabbrev-code :with company-yasnippet company-files)))
+    (setq company-backends '((company-capf company-dabbrev-code company-dabbrev :with company-yasnippet company-files)))
     (setq company-frontends '(company-pseudo-tooltip-frontend
                               company-echo-metadata-frontend))
 

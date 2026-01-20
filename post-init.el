@@ -754,8 +754,9 @@
         company-dabbrev-downcase nil
         company-selection-wrap-around t
         company-show-quick-access 'on
-        company-begin-commands '(self-insert-command)
         company-idle-delay 0.3
+
+        company-begin-commands '(self-insert-command) ;; Disables the popup in org-mode
 
         company-tooltip-align-annotations t
         company-tooltip-flip-when-above t
@@ -765,7 +766,7 @@
 
   (setq company-idle-delay 0
         company-minimum-prefix-length 1)
-  (setq company-backends '((company-capf company-dabbrev-code :with company-yasnippet company-files)))
+  (setq company-backends '((company-capf company-dabbrev-code company-dabbrev :with company-yasnippet company-files)))
   (setq company-frontends '(company-pseudo-tooltip-frontend
                             company-echo-metadata-frontend))
 
