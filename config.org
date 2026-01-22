@@ -273,6 +273,11 @@ Integrates direnv into Emacs. This is especially useful when the dev environment
     :after org
     :config
     (setq org-archive-location "archive.org::datetree/"))
+
+  (use-package org-download
+    :straight t
+    :defer t
+    :after org)
 #+end_src
 
 ** +dired

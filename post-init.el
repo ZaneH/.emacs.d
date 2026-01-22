@@ -161,6 +161,11 @@
   :config
   (setq org-archive-location "archive.org::datetree/"))
 
+(use-package org-download
+  :straight t
+  :defer t
+  :after org)
+
 (use-package dired-gitignore
   :straight t
   :defer t
