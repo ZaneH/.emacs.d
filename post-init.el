@@ -771,16 +771,24 @@
 
   (setq company-idle-delay 0
         company-minimum-prefix-length 1)
-  (setq company-backends '((company-capf company-dabbrev-code company-dabbrev :with company-yasnippet company-files)))
+  (setq company-backends '((company-capf company-dabbrev-code company-dabbrev :with company-files)))
   (setq company-frontends '(company-pseudo-tooltip-frontend
                             company-echo-metadata-frontend))
 
   (setq company-transformers '(delete-dups
                                company-sort-by-occurrence company-sort-prefer-same-case-prefix))
   (setq company-occurrence-weight-function 'company-occurrence-prefer-closest-above)
+  (setq company-require-match nil)
+
   :config
   (add-hook 'company-mode-hook #'evil-normalize-keymaps)
-  (add-hook 'after-init-hook 'global-company-mode))
+  (add-hook 'after-init-hook 'global-company-mode)
+
+  (with-eval-after-load 'company
+    (define-key company-active-map (kbd "TAB") #'company-complete-common-or-cycle)
+    (define-key company-active-map (kbd "<tab>") #'company-complete-common-or-cycle)
+    (define-key company-active-map (kbd "RET") #'company-complete-selection)
+    (define-key company-active-map (kbd "<return>") #'company-complete-selection)))
 
 (use-package company-box
   :straight t
@@ -1165,9 +1173,10 @@
   :defer t
   :init
   (custom-set-variables
-   '(zoom-mode t)
+   '(zoom-mode nil) ;; Use M-x zoom
    '(zoom-size '(0.618 . 0.618))
-   '(zoom-ignored-major-modes '(vterm-mode))))
+   '(zoom-ignored-major-modes '(vterm-mode dired-mode))
+   '(zoom-ignored-buffer-name-regexps '("^*calc" "^*compilation" "^*vterm"))))
 
 (use-package swiper-helm
   :straight t
@@ -1879,17 +1888,4 @@
    "M-=" 'evil-numbers/inc-at-pt
    "M--" 'evil-numbers/dec-at-pt
    "M-+" 'evil-numbers/inc-at-pt-incremental
-   "M-_" 'evil-numbers/dec-at-pt-incremental)
-
-  (with-eval-after-load 'company
-    (define-key company-active-map
-                (kbd "TAB")
-                #'company-complete-common-or-cycle)
-
-    (define-key company-active-map
-                (kbd "RET")
-                (lambda ()
-                  (interactive)
-                  (if (company-tooltip-is-visible)
-                      (company-complete)
-                    (self-insert-command 1))))))
+   "M-_" 'evil-numbers/dec-at-pt-incremental))
