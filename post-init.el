@@ -962,8 +962,7 @@
   (setq dape-key-prefix nil)
   :custom
   (dape-breakpoint-global-mode +1)
-  (dape-buffer-window-arrangement 'right)
-  (dape-cwd-function #'projectile-project-root))
+  (dape-buffer-window-arrangement 'right))
 
 (use-package repeat
   :straight (:type built-in)
