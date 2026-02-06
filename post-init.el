@@ -586,7 +586,8 @@
            js-ts-mode
            go-ts-mode
            zig-ts-mode
-           python-ts-mode) . lsp-deferred))
+           python-ts-mode
+           cmake-ts-mode) . lsp-deferred))
   :custom
   (lsp-keymap-prefix "C-c l")
   (lsp-completion-provider :none)
