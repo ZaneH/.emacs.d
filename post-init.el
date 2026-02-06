@@ -434,7 +434,12 @@
          ("\\.go\\'" . go-ts-mode)
          ("\\.yaml\\'" . yaml-ts-mode)
          ("\\.yml\\'" . yaml-ts-mode)
-         ("\\.py\\'" . python-ts-mode))
+         ("\\.py\\'" . python-ts-mode)
+         ("\\.cpp\\'" . c++-ts-mode)
+         ("\\.hpp\\'" . c++-ts-mode)
+         ("\\.h\\'" . c-or-c++-ts-mode)
+         ("\\.cmake\\'" . cmake-ts-mode)
+         ("CMakeLists\\.txt\\'" . cmake-ts-mode))
   
   :preface
   (defun os/setup-install-grammars ()
@@ -1593,6 +1598,7 @@
     "wL"  '(evil-window-move-far-right :which-key "Move far right")
     "w="  '(balance-windows :which-key "Balance windows")
     "wm"  '(delete-other-windows :which-key "Maximize window")
+    "wx"  '(ace-delete-window :which-key "Ace delete window")
     "w+"  '(evil-window-increase-height :which-key "Increase height")
     "w-"  '(evil-window-decrease-height :which-key "Decrease height")
     "w>"  '(evil-window-increase-width :which-key "Increase width")
