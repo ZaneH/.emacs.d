@@ -587,7 +587,9 @@
            go-ts-mode
            zig-ts-mode
            python-ts-mode
-           cmake-ts-mode) . lsp-deferred))
+           cmake-ts-mode
+           c++-ts-mode
+           c-ts-mode) . lsp-deferred))
   :custom
   (lsp-keymap-prefix "C-c l")
   (lsp-completion-provider :none)
@@ -1278,6 +1280,11 @@
   :straight t
   :defer t)
 
+(use-package ws-butler
+  :straight t
+  :defer t
+  :hook (prog-mode . ws-butler-mode))
+
 (use-package general
   :straight t
   :demand t
@@ -1599,6 +1606,7 @@
     "wL"  '(evil-window-move-far-right :which-key "Move far right")
     "w="  '(balance-windows :which-key "Balance windows")
     "wm"  '(delete-other-windows :which-key "Maximize window")
+    "wo"  '(ace-swap-window :which-key "Swap with window")
     "wx"  '(ace-delete-window :which-key "Ace delete window")
     "w+"  '(evil-window-increase-height :which-key "Increase height")
     "w-"  '(evil-window-decrease-height :which-key "Decrease height")
@@ -1895,3 +1903,10 @@
    "M--" 'evil-numbers/dec-at-pt
    "M-+" 'evil-numbers/inc-at-pt-incremental
    "M-_" 'evil-numbers/dec-at-pt-incremental))
+
+(use-package clang-format
+  :straight t
+  :defer t
+  :hook ((c-ts-mode c++-ts-mode) . clang-format-on-save-mode)
+  :config
+  (setq clang-format-style "file"))
