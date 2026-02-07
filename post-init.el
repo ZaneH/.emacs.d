@@ -437,7 +437,7 @@
          ("\\.py\\'" . python-ts-mode)
          ("\\.cpp\\'" . c++-ts-mode)
          ("\\.hpp\\'" . c++-ts-mode)
-         ("\\.h\\'" . c-or-c++-ts-mode)
+         ("\\.h\\'" . c++-ts-mode)
          ("\\.cmake\\'" . cmake-ts-mode)
          ("CMakeLists\\.txt\\'" . cmake-ts-mode))
   
@@ -687,6 +687,7 @@
 (use-package hl-todo
   :straight t
   ;; :defer t -- Do not defer
+  :hook (prog-mode . hl-todo-mode)
   :after magit
   :config
   (add-hook 'magit-log-wash-summary-hook
