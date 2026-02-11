@@ -969,6 +969,10 @@
   :defer t
   :preface
   (setq dape-key-prefix nil)
+  :config
+  (put 'dape--overlay-arrow-position
+      'overlay-arrow-string
+      (propertize "▶" 'face 'dape-stack-trace-face))
   :custom
   (dape-breakpoint-global-mode +1)
   (dape-buffer-window-arrangement 'right))
