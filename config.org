@@ -54,6 +54,7 @@
   - [[#restart][+restart]]
   - [[#grip][+grip]]
   - [[#org-cv][+org-cv]]
+  - [[#ox-hugo][+ox-hugo]]
   - [[#pdf-tools][+pdf-tools]]
   - [[#eldoc-box][+eldoc-box]]
   - [[#compilation-buffer][+compilation-buffer]]
@@ -1339,7 +1340,13 @@ git-timemachine.el has keybinds that conflict with evil. The =eval-after-load= a
     (setq org-latex-compiler "lualatex")
     (setq org-preview-latex-default-process 'dvisvgm))
 #+end_src
+** +ox-hugo
 
+#+begin_src emacs-lisp
+(use-package ox-hugo
+  :straight t
+  :after ox)
+#+end_src
 ** +pdf-tools
 
 #+begin_src emacs-lisp

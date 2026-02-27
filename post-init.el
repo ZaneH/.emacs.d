@@ -1033,6 +1033,10 @@
   (setq org-latex-compiler "lualatex")
   (setq org-preview-latex-default-process 'dvisvgm))
 
+(use-package ox-hugo
+  :straight t
+  :after ox)
+
 (use-package pdf-tools
   :straight t
   :defer t
